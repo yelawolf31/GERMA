@@ -1,0 +1,51 @@
+import Badge from './Badge'
+import { useTranslation } from '../../i18n'
+
+const STATUS_META = {
+  // Customer
+  active: { tone: 'green' },
+  inactive: { tone: 'gray' },
+  // Refrigerator
+  working: { tone: 'green' },
+  needs_maintenance: { tone: 'orange' },
+  broken: { tone: 'red' },
+  removed: { tone: 'gray' },
+  // Cleanliness
+  good: { tone: 'green' },
+  medium: { tone: 'yellow' },
+  bad: { tone: 'red' },
+  // Issue status
+  open: { tone: 'red' },
+  in_progress: { tone: 'orange' },
+  resolved: { tone: 'green' },
+  // Priority
+  low: { tone: 'blue' },
+  high: { tone: 'orange' },
+  critical: { tone: 'red' },
+}
+
+const LABEL_PATHS = {
+  customer: (value) => (value === 'active' ? 'customers.active' : 'customers.inactive'),
+  refrigerator: (value) => `refrigerators.${value}`,
+  condition: (value) => `refrigerators.${value}`,
+  cleanliness: (value) => `visits.${value}`,
+  issueStatus: (value) => `issues.${value}`,
+  priority: (value) => `issues.${value}`,
+}
+
+/**
+ * Status badge with translated label and color tone.
+ * @param {'customer'|'refrigerator'|'condition'|'cleanliness'|'issueStatus'|'priority'} type
+ * @param {string} value
+ */
+export default function StatusBadge({ type, value, className = '' }) {
+  const { t } = useTranslation()
+  if (!value) return null
+  const meta = STATUS_META[value] || { tone: 'gray' }
+  const path = LABEL_PATHS[type]?.(value)
+  return (
+    <Badge tone={meta.tone} className={className}>
+      {path ? t(path) : value}
+    </Badge>
+  )
+}
