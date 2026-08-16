@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Search } from 'lucide-react'
+import { MapPin, Search, Camera } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import Card from '../components/ui/Card'
 import Spinner from '../components/ui/Spinner'
@@ -10,11 +10,13 @@ import StatusBadge from '../components/ui/StatusBadge'
 import { Select, Input } from '../components/ui/Field'
 import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../i18n'
-import { fetchVisits } from '../services/visits'
+import { fetchVisits, fetchVisitPhotoCounts } from '../services/visits'
 import { fetchUserProfiles } from '../services/users'
 import { useCustomers } from '../hooks/useCustomers'
 import { useDebounce } from '../hooks/useDebounce'
 import { formatDate, formatTime, startOfDaysAgo, startOfToday } from '../utils/format'
+
+const PAGE_SIZE = 15
 
 function VisitRow({ visit, onClick }) {
   return (
@@ -44,7 +46,13 @@ function VisitRow({ visit, onClick }) {
               </p>
             )}
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-2">
+            {visit._photoCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                <Camera className="h-3 w-3" />
+                {visit._photoCount}
+              </span>
+            )}
             <StatusBadge type="condition" value={visit.refrigerator_condition} />
             <StatusBadge type="cleanliness" value={visit.cleanliness} />
           </div>
@@ -54,11 +62,9 @@ function VisitRow({ visit, onClick }) {
   )
 }
 
-const PAGE_SIZE = 15
-
 export default function Visits() {
   const { t } = useTranslation()
-  const { role } = useAuth()
+  const { role, user } = useAuth()
   const navigate = useNavigate()
 
   const [visits, setVisits] = useState([])
@@ -93,8 +99,15 @@ export default function Visits() {
         next.setDate(next.getDate() + 1)
         to = next
       }
-      const data = await fetchVisits({ from, to, supervisorId: supervisorId || null, customerId: customerId || null })
-      setVisits(data)
+
+      const effectiveSupervisorId = role === 'admin' ? (supervisorId || null) : user?.id
+      const data = await fetchVisits({ from, to, supervisorId: effectiveSupervisorId, customerId: customerId || null })
+
+      const visitIds = data.map((v) => v.id)
+      const photoCounts = await fetchVisitPhotoCounts(visitIds).catch(() => ({}))
+
+      const enriched = data.map((v) => ({ ...v, _photoCount: photoCounts[v.id] || 0 }))
+      setVisits(enriched)
     } catch (err) {
       setError(err)
     } finally {
@@ -145,7 +158,7 @@ export default function Visits() {
       <PageHeader title={t('visits.title')} subtitle={loading ? undefined : `${summary.total} — ${summary.today} ${t('dashboard.todayVisits').toLowerCase()}`} />
 
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Select value={range} onChange={(e) => setRange(e.target.value)}>
+        <Select value={range} onChange={(e) => { setRange(e.target.value); setPage(1) }}>
           <option value="today">{t('visits.today')}</option>
           <option value="yesterday">{t('visits.yesterday')}</option>
           <option value="7days">{t('visits.last7Days')}</option>
@@ -160,7 +173,7 @@ export default function Visits() {
           />
         )}
         {role === 'admin' && (
-          <Select value={supervisorId} onChange={(e) => setSupervisorId(e.target.value)}>
+          <Select value={supervisorId} onChange={(e) => { setSupervisorId(e.target.value); setPage(1) }}>
             <option value="">{t('visits.allSupervisors')}</option>
             {supervisors.map((supervisor) => (
               <option key={supervisor.id} value={supervisor.id}>
@@ -169,7 +182,7 @@ export default function Visits() {
             ))}
           </Select>
         )}
-        <Select value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
+        <Select value={customerId} onChange={(e) => { setCustomerId(e.target.value); setPage(1) }}>
           <option value="">{t('visits.allCustomers')}</option>
           {customers.map((customer) => (
             <option key={customer.id} value={customer.id}>
@@ -205,15 +218,25 @@ export default function Visits() {
             ))}
             {pageCount > 1 && (
               <div className="flex items-center justify-between pt-2">
-                <Button variant="secondary" size="sm" disabled={safePage <= 1} onClick={() => setPage((p) => p - 1)}>
+                <button
+                  type="button"
+                  className="rounded-xl border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                  disabled={safePage <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
                   {t('common.previous')}
-                </Button>
+                </button>
                 <span className="text-sm text-slate-500">
                   {safePage} / {pageCount}
                 </span>
-                <Button variant="secondary" size="sm" disabled={safePage >= pageCount} onClick={() => setPage((p) => p + 1)}>
+                <button
+                  type="button"
+                  className="rounded-xl border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                  disabled={safePage >= pageCount}
+                  onClick={() => setPage((p) => p + 1)}
+                >
                   {t('common.next')}
-                </Button>
+                </button>
               </div>
             )}
           </>

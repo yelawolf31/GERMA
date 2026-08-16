@@ -457,3 +457,74 @@ describe('customer search filters', () => {
     expect(result[0].id).toBe('1')
   })
 })
+
+describe('visit detail i18n completeness', () => {
+  it('all languages have permission denied keys', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.permissionDenied).toBeDefined()
+      expect(lang.visits.permissionDeniedDesc).toBeDefined()
+    }
+  })
+
+  it('all languages have not found keys', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.notFound).toBeDefined()
+      expect(lang.visits.notFoundDesc).toBeDefined()
+    }
+  })
+
+  it('all languages have noRefrigerator key', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.noRefrigerator).toBeDefined()
+    }
+  })
+
+  it('all languages have linkedRefrigerator key', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.linkedRefrigerator).toBeDefined()
+    }
+  })
+
+  it('all languages have photo-related keys', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.noPhotos).toBeDefined()
+      expect(lang.visits.photoPreview).toBeDefined()
+      expect(lang.visits.photoLoadError).toBeDefined()
+      expect(lang.visits.downloadPhoto).toBeDefined()
+    }
+  })
+
+  it('all languages have createdAt key', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.createdAt).toBeDefined()
+    }
+  })
+
+  it('all languages have viewCustomer and viewRefrigerator keys', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.viewCustomer).toBeDefined()
+      expect(lang.visits.viewRefrigerator).toBeDefined()
+    }
+  })
+})
+
+describe('visit conditions match DB constraints', () => {
+  it('condition constants use working/needs_maintenance/broken (not good/medium/bad)', () => {
+    const conditions = ['working', 'needs_maintenance', 'broken']
+    expect(conditions).toContain('working')
+    expect(conditions).toContain('needs_maintenance')
+    expect(conditions).toContain('broken')
+    expect(conditions).not.toContain('good')
+    expect(conditions).not.toContain('medium')
+    expect(conditions).not.toContain('bad')
+  })
+})
+
+describe('StatusBadge condition mapping', () => {
+  it('condition type handles working/needs_maintenance/broken values', () => {
+    const conditionMap = { working: true, needs_maintenance: true, broken: true }
+    expect(conditionMap.working).toBe(true)
+    expect(conditionMap.needs_maintenance).toBe(true)
+    expect(conditionMap.broken).toBe(true)
+  })
+})

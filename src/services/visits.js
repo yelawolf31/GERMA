@@ -6,7 +6,7 @@ const VISIT_SELECT = `
   supervisor:profiles(id, full_name)
 `
 
-const VALID_CONDITIONS = ['good', 'medium', 'bad']
+const VALID_CONDITIONS = ['working', 'needs_maintenance', 'broken']
 const VALID_CLEANLINESS = ['good', 'medium', 'bad']
 const MAX_STRING_LENGTH = 500
 
@@ -41,6 +41,7 @@ function validateVisitPayload(payload) {
     notes: sanitize(payload.notes),
     latitude: payload.latitude != null ? Number(payload.latitude) : null,
     longitude: payload.longitude != null ? Number(payload.longitude) : null,
+    refrigerator_id: payload.refrigerator_id || null,
   }
 }
 
@@ -73,6 +74,7 @@ export async function createVisit(payload) {
       notes: validated.notes,
       latitude: validated.latitude,
       longitude: validated.longitude,
+      refrigerator_id: validated.refrigerator_id,
     })
     .select()
     .single()
@@ -96,8 +98,9 @@ export async function fetchVisitStats() {
 
 const VISIT_DETAIL_SELECT = `
   *,
-  customer:customers(id, name, phone, wilaya, commune, latitude, longitude),
-  supervisor:profiles(id, full_name)
+  customer:customers(id, name, phone, address, wilaya, commune, latitude, longitude),
+  supervisor:profiles(id, full_name, email, role),
+  refrigerator:refrigerators(id, serial_number, model, status)
 `
 
 export async function fetchVisitById(id) {
@@ -109,4 +112,21 @@ export async function fetchVisitById(id) {
     .single()
   if (error) throw new Error(error.message)
   return data
+}
+
+/**
+ * Fetch photo counts for a batch of visit IDs. Returns { [visitId]: count }.
+ */
+export async function fetchVisitPhotoCounts(visitIds) {
+  if (!visitIds || visitIds.length === 0) return {}
+  const { data, error } = await supabase
+    .from('visit_photos')
+    .select('visit_id')
+    .in('visit_id', visitIds)
+  if (error) throw new Error(error.message)
+  const counts = {}
+  for (const row of data || []) {
+    counts[row.visit_id] = (counts[row.visit_id] || 0) + 1
+  }
+  return counts
 }

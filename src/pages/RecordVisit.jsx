@@ -17,26 +17,41 @@ export default function RecordVisit() {
   const navigate = useNavigate()
 
   const [customer, setCustomer] = useState(null)
+  const [refrigerators, setRefrigerators] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const busyRef = useRef(false)
 
   useEffect(() => {
-    supabase
-      .from('customers')
-      .select('id, name, phone, commune, wilaya, latitude, longitude')
-      .eq('id', customerId)
-      .single()
-      .then(({ data, error }) => {
-        if (error) {
-          setError(error)
-          navigate('/visits')
-          return
-        }
-        setCustomer(data)
+    const load = async () => {
+      setLoading(true)
+      try {
+        const [custResult, fridgeResult] = await Promise.all([
+          supabase
+            .from('customers')
+            .select('id, name, phone, commune, wilaya, latitude, longitude')
+            .eq('id', customerId)
+            .single(),
+          supabase
+            .from('refrigerators')
+            .select('id, serial_number, model, status')
+            .eq('customer_id', customerId)
+            .neq('status', 'removed')
+            .order('serial_number'),
+        ])
+        if (custResult.error) throw new Error(custResult.error.message)
+        setCustomer(custResult.data)
+        setRefrigerators(fridgeResult.data || [])
+      } catch (err) {
+        setError(err)
+        navigate('/visits')
+        return
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+    load()
   }, [customerId, navigate])
 
   const handleSubmit = async (payload) => {
@@ -44,7 +59,6 @@ export default function RecordVisit() {
     busyRef.current = true
     setSaving(true)
     try {
-      // 1. Insert visit (audit is DB-triggered)
       const { data: visit, error: visitError } = await supabase
         .from('visits')
         .insert({
@@ -55,12 +69,12 @@ export default function RecordVisit() {
           notes: payload.notes,
           latitude: payload.position.latitude,
           longitude: payload.position.longitude,
+          refrigerator_id: payload.refrigerator_id || null,
         })
         .select()
         .single()
       if (visitError) throw new Error(visitError.message)
 
-      // 2. Upload photos and save references
       if (payload.photos.length > 0) {
         await uploadVisitPhotos(visit.id, payload.photos)
       }
@@ -114,7 +128,12 @@ export default function RecordVisit() {
       )}
 
       <Card className="mt-4 p-5">
-        <VisitForm onSubmit={handleSubmit} onCancel={() => navigate(-1)} saving={saving} />
+        <VisitForm
+          onSubmit={handleSubmit}
+          onCancel={() => navigate(-1)}
+          saving={saving}
+          refrigerators={refrigerators}
+        />
       </Card>
 
       {saving && (

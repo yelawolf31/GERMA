@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Camera, Upload, ImagePlus, MapPin, Loader2, X, AlertTriangle } from 'lucide-react'
 import Button from '../ui/Button'
-import { Field, Textarea } from '../ui/Field'
+import { Field, Textarea, Select } from '../ui/Field'
 import { useTranslation } from '../../i18n'
 import { validateVisit } from '../../utils/validators'
 import { REFRIGERATOR_CONDITIONS, CLEANLINESS_LEVELS } from '../../constants/statuses'
@@ -49,13 +49,13 @@ function OptionGrid({ options, value, onChange }) {
  * Visit form: condition, cleanliness, notes, photos.
  * Collects data + files; the parent performs DB and storage writes.
  */
-export default function VisitForm({ onSubmit, onCancel, saving }) {
+export default function VisitForm({ onSubmit, onCancel, saving, refrigerators = [] }) {
   const { t } = useTranslation()
   const { getCurrentPosition, position, error: geoError, loading: locating } = useGeolocation()
   const cameraInputRef = useRef(null)
   const galleryInputRef = useRef(null)
 
-  const [form, setForm] = useState({ refrigerator_condition: '', cleanliness: '', notes: '' })
+  const [form, setForm] = useState({ refrigerator_condition: '', cleanliness: '', notes: '', refrigerator_id: '' })
   const [errors, setErrors] = useState({})
   const [photos, setPhotos] = useState([])
   const [compressing, setCompressing] = useState(false)
@@ -101,6 +101,7 @@ export default function VisitForm({ onSubmit, onCancel, saving }) {
       refrigerator_condition: form.refrigerator_condition,
       cleanliness: form.cleanliness,
       notes: form.notes || null,
+      refrigerator_id: form.refrigerator_id || null,
       photos: photos.map((p) => p.file),
       position: position
         ? { latitude: position.latitude, longitude: position.longitude }
@@ -139,6 +140,19 @@ export default function VisitForm({ onSubmit, onCancel, saving }) {
           )}
         </div>
       </Field>
+
+      {refrigerators.length > 0 && (
+        <Field label={t('visits.linkedRefrigerator')}>
+          <Select value={form.refrigerator_id} onChange={(e) => setField('refrigerator_id', e.target.value)}>
+            <option value="">{t('visits.noRefrigerator')}</option>
+            {refrigerators.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.serial_number} — {r.model || r.status}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      )}
 
       <Field label={t('visits.condition')} required error={errors.refrigerator_condition}>
         <OptionGrid
