@@ -4,6 +4,7 @@ import { Field, Input, Select, Textarea } from '../ui/Field'
 import { useTranslation } from '../../i18n'
 import { validateRefrigerator } from '../../utils/validators'
 import { REFRIGERATOR_STATUSES } from '../../constants/statuses'
+import { getRefrigeratorStatusKey } from '../../utils/statusLabels'
 
 const INITIAL_VALUES = {
   customer_id: '',
@@ -86,7 +87,7 @@ export default function RefrigeratorForm({ initialValues, customers, onSubmit, o
           <Select value={form.status} onChange={(e) => setField('status', e.target.value)}>
             {Object.values(REFRIGERATOR_STATUSES).map((status) => (
               <option key={status} value={status}>
-                {t(`refrigerators.${status}`)}
+                {t(getRefrigeratorStatusKey(status))}
               </option>
             ))}
           </Select>

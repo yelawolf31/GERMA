@@ -12,6 +12,7 @@ import { useRefrigerators } from '../hooks/useRefrigerators'
 import { useDebounce } from '../hooks/useDebounce'
 import { useTranslation } from '../i18n'
 import { REFRIGERATOR_STATUSES } from '../constants/statuses'
+import { getRefrigeratorStatusKey } from '../utils/statusLabels'
 
 const PAGE_SIZE = 15
 
@@ -48,7 +49,7 @@ export default function Refrigerators() {
     <div className="p-4 sm:p-6">
       <PageHeader
         title={t('refrigerators.title')}
-        subtitle={`${refrigerators.length} ${t('refrigerators.title').toLowerCase()}`}
+        subtitle={loading ? undefined : `${refrigerators.length} ${t('refrigerators.title').toLowerCase()}`}
         actions={
           <Button onClick={() => navigate('/refrigerators/add')}>
             <Plus className="h-4 w-4" />
@@ -75,7 +76,7 @@ export default function Refrigerators() {
             <option value="">{t('common.all')}</option>
             {Object.values(REFRIGERATOR_STATUSES).map((status) => (
               <option key={status} value={status}>
-                {t(`refrigerators.${status}`)}
+                {t(getRefrigeratorStatusKey(status))}
               </option>
             ))}
           </Select>

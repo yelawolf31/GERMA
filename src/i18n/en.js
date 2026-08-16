@@ -142,6 +142,8 @@ export const en = {
 
   visits: {
     title: 'Visits',
+    details: 'Visit Details',
+    visitInfo: 'Visit Information',
     record: 'Record a visit',
     recordFor: 'Visit —',
     customer: 'Customer',
@@ -239,6 +241,7 @@ export const en = {
     lastVisit: 'Last visit',
     noCustomers: 'No customers to display.',
     loading: 'Loading map...',
+    coordinates: 'Coordinates',
   },
 
   reports: {

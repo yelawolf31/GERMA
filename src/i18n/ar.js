@@ -142,6 +142,8 @@ export const ar = {
 
   visits: {
     title: 'الزيارات',
+    details: 'تفاصيل الزيارة',
+    visitInfo: 'معلومات الزيارة',
     record: 'تسجيل زيارة',
     recordFor: 'زيارة —',
     customer: 'الزبون',
@@ -239,6 +241,7 @@ export const ar = {
     lastVisit: 'آخر زيارة',
     noCustomers: 'لا يوجد زبائن لعرضهم.',
     loading: 'جاري تحميل الخريطة...',
+    coordinates: 'الإحداثيات',
   },
 
   reports: {

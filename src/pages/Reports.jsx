@@ -9,6 +9,7 @@ import { useIssues } from '../hooks/useIssues'
 import { useTranslation } from '../i18n'
 import { ISSUE_TYPES, ISSUE_PRIORITIES } from '../constants/issues'
 import { startOfDaysAgo, formatShortDay } from '../utils/format'
+import { getRefrigeratorStatusKey } from '../utils/statusLabels'
 
 const COLORS = {
   working: '#16a34a',
@@ -47,7 +48,7 @@ export default function Reports() {
       if (counts[ref.status] != null) counts[ref.status] += 1
     })
     return Object.entries(counts).map(([key, value]) => ({
-      name: t(`refrigerators.${key}`),
+      name: t(getRefrigeratorStatusKey(key)),
       value,
       color: COLORS[key],
     }))

@@ -2,6 +2,7 @@ import { SlidersHorizontal } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import Checkbox from '../ui/Checkbox'
 import { REFRIGERATOR_STATUSES, CUSTOMER_STATUSES } from '../../constants/statuses'
+import { getRefrigeratorStatusKey, getCustomerStatusKey } from '../../utils/statusLabels'
 import { VISIT_FILTERS } from '../../utils/filters'
 
 function toggle(list, value) {
@@ -43,7 +44,7 @@ export default function MapFilters({ filters, onChange, open, onToggle }) {
               {Object.values(REFRIGERATOR_STATUSES).map((status) => (
                 <Checkbox
                   key={status}
-                  label={t(`refrigerators.${status}`)}
+                  label={t(getRefrigeratorStatusKey(status))}
                   checked={filters.refrigeratorStatus.includes(status)}
                   onChange={() => setRefrigeratorStatus(status)}
                 />
@@ -59,7 +60,7 @@ export default function MapFilters({ filters, onChange, open, onToggle }) {
               {Object.values(CUSTOMER_STATUSES).map((status) => (
                 <Checkbox
                   key={status}
-                  label={t(`customers.${status}`)}
+                  label={t(getCustomerStatusKey(status))}
                   checked={filters.customerStatus.includes(status)}
                   onChange={() => setCustomerStatus(status)}
                 />

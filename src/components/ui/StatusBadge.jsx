@@ -1,5 +1,6 @@
 import Badge from './Badge'
 import { useTranslation } from '../../i18n'
+import { getRefrigeratorStatusKey, getRefrigeratorConditionKey, getCleanlinessKey, getCustomerStatusKey } from '../../utils/statusLabels'
 
 const STATUS_META = {
   // Customer
@@ -24,11 +25,11 @@ const STATUS_META = {
   critical: { tone: 'red' },
 }
 
-const LABEL_PATHS = {
-  customer: (value) => (value === 'active' ? 'customers.active' : 'customers.inactive'),
-  refrigerator: (value) => `refrigerators.${value}`,
-  condition: (value) => `refrigerators.${value}`,
-  cleanliness: (value) => `visits.${value}`,
+const LABEL_KEYS = {
+  customer: (value) => getCustomerStatusKey(value),
+  refrigerator: (value) => getRefrigeratorStatusKey(value),
+  condition: (value) => getRefrigeratorConditionKey(value),
+  cleanliness: (value) => getCleanlinessKey(value),
   issueStatus: (value) => `issues.${value}`,
   priority: (value) => `issues.${value}`,
 }
@@ -42,10 +43,10 @@ export default function StatusBadge({ type, value, className = '' }) {
   const { t } = useTranslation()
   if (!value) return null
   const meta = STATUS_META[value] || { tone: 'gray' }
-  const path = LABEL_PATHS[type]?.(value)
+  const key = LABEL_KEYS[type]?.(value)
   return (
     <Badge tone={meta.tone} className={className}>
-      {path ? t(path) : value}
+      {key ? t(key) : value}
     </Badge>
   )
 }

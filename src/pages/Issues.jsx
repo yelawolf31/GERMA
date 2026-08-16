@@ -65,7 +65,7 @@ export default function Issues() {
     <div className="p-4 sm:p-6">
       <PageHeader
         title={t('issues.title')}
-        subtitle={`${issues.filter((i) => i.status === 'open').length} ${t('issues.open').toLowerCase()}`}
+        subtitle={loading ? undefined : `${issues.filter((i) => i.status === 'open').length} ${t('issues.open').toLowerCase()}`}
         actions={
           <Button onClick={() => setFormOpen(true)}>
             <Plus className="h-4 w-4" />

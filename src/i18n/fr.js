@@ -126,6 +126,8 @@ export const fr = {
     working: 'En fonctionnement',
     needsMaintenance: 'Entretien requis',
     needs_maintenance: 'Entretien requis',
+    broken: 'En panne',
+    removed: 'Retiré',
     changeStatus: 'Changer le statut',
     currentStatus: 'Statut actuel',
     customerRequired: 'Le client est requis.',
@@ -140,6 +142,8 @@ export const fr = {
 
   visits: {
     title: 'Visites',
+    details: 'Détails de la visite',
+    visitInfo: 'Informations de la visite',
     record: 'Enregistrer une visite',
     recordFor: 'Visite —',
     customer: 'Client',
@@ -237,6 +241,7 @@ export const fr = {
     lastVisit: 'Dernière visite',
     noCustomers: 'Aucun client à afficher.',
     loading: 'Chargement de la carte...',
+    coordinates: 'Coordonnées',
   },
 
   reports: {

@@ -93,3 +93,20 @@ export async function fetchVisitStats() {
   if (error) throw new Error(error.message)
   return data || []
 }
+
+const VISIT_DETAIL_SELECT = `
+  *,
+  customer:customers(id, name, phone, wilaya, commune, latitude, longitude),
+  supervisor:profiles(id, full_name)
+`
+
+export async function fetchVisitById(id) {
+  if (!id) throw new Error('Visit ID is required')
+  const { data, error } = await supabase
+    .from('visits')
+    .select(VISIT_DETAIL_SELECT)
+    .eq('id', id)
+    .single()
+  if (error) throw new Error(error.message)
+  return data
+}

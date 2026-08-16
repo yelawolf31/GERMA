@@ -41,7 +41,7 @@ export default function Customers() {
     <div className="p-4 sm:p-6">
       <PageHeader
         title={t('customers.title')}
-        subtitle={`${customers.length} ${t('customers.title').toLowerCase()}`}
+        subtitle={loading ? undefined : `${customers.length} ${t('customers.title').toLowerCase()}`}
         actions={
           <Button onClick={() => navigate('/customers/add')}>
             <Plus className="h-4 w-4" />

@@ -15,6 +15,7 @@ const Refrigerators = lazy(() => import('../pages/Refrigerators'))
 const RefrigeratorDetails = lazy(() => import('../pages/RefrigeratorDetails'))
 const AddRefrigerator = lazy(() => import('../pages/AddRefrigerator'))
 const Visits = lazy(() => import('../pages/Visits'))
+const VisitDetails = lazy(() => import('../pages/VisitDetails'))
 const RecordVisit = lazy(() => import('../pages/RecordVisit'))
 const Issues = lazy(() => import('../pages/Issues'))
 const Reports = lazy(() => import('../pages/Reports'))
@@ -58,6 +59,7 @@ export default function AppRoutes() {
           <Route path="/refrigerators/edit/:id" element={withSuspense(AddRefrigerator)} />
           <Route path="/refrigerators/:id" element={withSuspense(RefrigeratorDetails)} />
           <Route path="/visits" element={withSuspense(Visits)} />
+          <Route path="/visits/:visitId" element={withSuspense(VisitDetails)} />
           <Route path="/visits/record/:customerId" element={withSuspense(RecordVisit)} />
           <Route path="/issues" element={withSuspense(Issues)} />
           <Route path="/reports" element={withSuspense(Reports)} />

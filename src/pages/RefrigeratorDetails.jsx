@@ -12,6 +12,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../i18n'
 import { supabase } from '../lib/supabase'
 import { formatDate } from '../utils/format'
+import { getRefrigeratorStatusKey } from '../utils/statusLabels'
 import { useToast } from '../hooks/useToast'
 
 function InfoRow({ label, value }) {
@@ -161,7 +162,7 @@ export default function RefrigeratorDetails() {
             <InfoRow label={t('refrigerators.serialNumber')} value={data.serial_number} />
             <InfoRow label={t('refrigerators.model')} value={data.model} />
             <InfoRow label={t('refrigerators.installationDate')} value={formatDate(data.installation_date)} />
-            <InfoRow label={t('refrigerators.status')} value={t(`refrigerators.${data.status}`)} />
+            <InfoRow label={t('refrigerators.status')} value={t(getRefrigeratorStatusKey(data.status))} />
             {data.notes && <InfoRow label={t('refrigerators.notes')} value={data.notes} />}
           </CardBody>
         </Card>

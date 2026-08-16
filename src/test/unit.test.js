@@ -13,10 +13,22 @@ import {
   validateIssue,
 } from '../utils/validators'
 import { haversineKm, formatDistance, sortCustomersByDistance } from '../utils/geo'
-import { MARKER_COLORS } from '../constants/statuses'
+import {
+  getRefrigeratorStatusKey,
+  getRefrigeratorConditionKey,
+  getCleanlinessKey,
+  getCustomerStatusKey,
+} from '../utils/statusLabels'
+import { MARKER_COLORS, REFRIGERATOR_STATUSES, CUSTOMER_STATUSES } from '../constants/statuses'
 import { fr } from '../i18n/fr'
 import { en } from '../i18n/en'
 import { ar } from '../i18n/ar'
+import {
+  matchesCustomerSearch,
+  filterAndSearchCustomers,
+  applyCustomerFilters,
+  createDefaultMapFilters,
+} from '../utils/filters'
 
 const t = (key) => key
 
@@ -297,5 +309,151 @@ describe('i18n translations', () => {
 
   it('en has in_progress alias', () => {
     expect(en.issues.in_progress).toBe('In progress')
+  })
+
+  it('all languages have refrigerator broken and removed keys', () => {
+    expect(fr.refrigerators.broken).toBe('En panne')
+    expect(fr.refrigerators.removed).toBe('Retiré')
+    expect(en.refrigerators.broken).toBe('Broken')
+    expect(en.refrigerators.removed).toBe('Removed')
+    expect(ar.refrigerators.broken).toBe('معطلة')
+    expect(ar.refrigerators.removed).toBe('مسحوبة')
+  })
+
+  it('all languages have visit detail keys', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.details).toBeDefined()
+      expect(lang.visits.visitInfo).toBeDefined()
+      expect(lang.map.coordinates).toBeDefined()
+    }
+  })
+})
+
+describe('statusLabels', () => {
+  it('getRefrigeratorStatusKey returns correct key for every status', () => {
+    expect(getRefrigeratorStatusKey(REFRIGERATOR_STATUSES.WORKING)).toBe('refrigerators.working')
+    expect(getRefrigeratorStatusKey(REFRIGERATOR_STATUSES.NEEDS_MAINTENANCE)).toBe('refrigerators.needs_maintenance')
+    expect(getRefrigeratorStatusKey(REFRIGERATOR_STATUSES.BROKEN)).toBe('refrigerators.broken')
+    expect(getRefrigeratorStatusKey(REFRIGERATOR_STATUSES.REMOVED)).toBe('refrigerators.removed')
+  })
+
+  it('getRefrigeratorStatusKey falls back for unknown status', () => {
+    expect(getRefrigeratorStatusKey('unknown')).toBe('refrigerators.status')
+    expect(getRefrigeratorStatusKey(null)).toBe('refrigerators.status')
+  })
+
+  it('getRefrigeratorConditionKey returns correct key', () => {
+    expect(getRefrigeratorConditionKey('working')).toBe('refrigerators.working')
+    expect(getRefrigeratorConditionKey('broken')).toBe('refrigerators.broken')
+    expect(getRefrigeratorConditionKey('unknown')).toBe('refrigerators.status')
+  })
+
+  it('getCleanlinessKey returns correct key', () => {
+    expect(getCleanlinessKey('good')).toBe('visits.good')
+    expect(getCleanlinessKey('medium')).toBe('visits.medium')
+    expect(getCleanlinessKey('bad')).toBe('visits.bad')
+    expect(getCleanlinessKey('unknown')).toBe('visits.cleanliness')
+  })
+
+  it('getCustomerStatusKey returns correct key', () => {
+    expect(getCustomerStatusKey(CUSTOMER_STATUSES.ACTIVE)).toBe('customers.active')
+    expect(getCustomerStatusKey(CUSTOMER_STATUSES.INACTIVE)).toBe('customers.inactive')
+    expect(getCustomerStatusKey('unknown')).toBe('customers.status')
+  })
+
+  it('all status keys resolve to defined values in all languages', () => {
+    const t = (key) => {
+      for (const lang of [fr, en, ar]) {
+        const val = key.split('.').reduce((acc, p) => (acc == null ? undefined : acc[p]), lang)
+        if (val == null) return false
+      }
+      return true
+    }
+    for (const status of Object.values(REFRIGERATOR_STATUSES)) {
+      expect(t(getRefrigeratorStatusKey(status))).toBe(true)
+    }
+  })
+})
+
+describe('customer search filters', () => {
+  const customers = [
+    { id: '1', name: 'Superette El Amel', phone: '0550112233', wilaya: 'Oran', commune: 'Bir El Djir', refrigerators: [{ serial_number: 'GERMA-0258' }] },
+    { id: '2', name: 'Épicerie Benali', phone: '0550223344', wilaya: 'Oran', commune: 'Oran', refrigerators: [] },
+    { id: '3', name: 'Café Le Printemps', phone: '0550778899', wilaya: 'Alger', commune: 'Bab Ezzouar', refrigerators: [] },
+  ]
+
+  it('matchesCustomerSearch returns all for empty query', () => {
+    expect(matchesCustomerSearch(customers[0], '')).toBe(true)
+    expect(matchesCustomerSearch(customers[0], null)).toBe(true)
+  })
+
+  it('matchesCustomerSearch matches by name', () => {
+    expect(matchesCustomerSearch(customers[0], 'superette')).toBe(true)
+    expect(matchesCustomerSearch(customers[0], 'Superette')).toBe(true)
+    expect(matchesCustomerSearch(customers[1], 'superette')).toBe(false)
+  })
+
+  it('matchesCustomerSearch matches by phone', () => {
+    expect(matchesCustomerSearch(customers[0], '055011')).toBe(true)
+    expect(matchesCustomerSearch(customers[0], '99999')).toBe(false)
+  })
+
+  it('matchesCustomerSearch matches by serial number', () => {
+    expect(matchesCustomerSearch(customers[0], 'GERMA-0258')).toBe(true)
+    expect(matchesCustomerSearch(customers[0], '0258')).toBe(true)
+  })
+
+  it('matchesCustomerSearch matches by wilaya', () => {
+    expect(matchesCustomerSearch(customers[2], 'alger')).toBe(true)
+    expect(matchesCustomerSearch(customers[2], 'oran')).toBe(false)
+  })
+
+  it('filterAndSearchCustomers applies both filters and search', () => {
+    const customersWithStatus = [
+      { ...customers[0], status: 'active' },
+      { ...customers[1], status: 'active' },
+      { ...customers[2], status: 'inactive' },
+    ]
+    const result = filterAndSearchCustomers(
+      customersWithStatus,
+      { refrigeratorStatus: [], customerStatus: ['active'], visits: [], hasOpenIssues: false },
+      'oran',
+    )
+    expect(result.length).toBe(2)
+  })
+
+  it('applyCustomerFilters with default filters returns all', () => {
+    const result = applyCustomerFilters(customers, createDefaultMapFilters())
+    expect(result).toHaveLength(3)
+  })
+
+  it('applyCustomerFilters with customerStatus filters correctly', () => {
+    const activeCustomers = customers.map((c, i) => ({ ...c, status: i < 2 ? 'active' : 'inactive' }))
+    const result = applyCustomerFilters(activeCustomers, {
+      refrigeratorStatus: [],
+      customerStatus: ['active'],
+      visits: [],
+      hasOpenIssues: false,
+    })
+    expect(result).toHaveLength(2)
+  })
+
+  it('applyCustomerFilters with refrigeratorStatus filters correctly', () => {
+    const customerWithBroken = {
+      ...customers[0],
+      refrigerators: [{ status: 'broken' }],
+    }
+    const customerWithWorking = {
+      ...customers[1],
+      refrigerators: [{ status: 'working' }],
+    }
+    const result = applyCustomerFilters([customerWithBroken, customerWithWorking], {
+      refrigeratorStatus: ['broken'],
+      customerStatus: [],
+      visits: [],
+      hasOpenIssues: false,
+    })
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('1')
   })
 })

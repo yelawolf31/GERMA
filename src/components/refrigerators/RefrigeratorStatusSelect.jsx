@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from '../../i18n'
 import { REFRIGERATOR_STATUSES } from '../../constants/statuses'
+import { getRefrigeratorStatusKey } from '../../utils/statusLabels'
 import { useToast } from '../../hooks/useToast'
 
 const STATUS_OPTIONS = [
@@ -37,7 +38,7 @@ export default function RefrigeratorStatusSelect({ currentStatus, onChange, disa
         <span className="text-slate-500">{t('refrigerators.currentStatus')} :</span>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
           <span className={`h-2.5 w-2.5 rounded-full ${STATUS_OPTIONS.find((o) => o.value === currentStatus)?.dot || 'bg-slate-400'}`} />
-          {t(`refrigerators.${currentStatus}`)}
+          {t(getRefrigeratorStatusKey(currentStatus))}
         </span>
       </div>
 

@@ -217,6 +217,20 @@ export default function MapView({
     map.getSource('customers').setData(buildGeoJson(customers))
   }, [customers])
 
+  // Auto-fit bounds when customers with coordinates change
+  const hasFitRef = useRef(false)
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    if (!map || !loaded) return
+    const withCoords = customers.filter((c) => c.latitude != null && c.longitude != null)
+    if (withCoords.length === 0) return
+    const bounds = new mapboxgl.LngLatBounds()
+    withCoords.forEach((c) => bounds.extend([c.longitude, c.latitude]))
+    const padding = hasFitRef.current ? 40 : 80
+    map.fitBounds(bounds, { padding, maxZoom: 15, duration: hasFitRef.current ? 600 : 0 })
+    hasFitRef.current = true
+  }, [customers, loaded])
+
   // Fly to the focused customer
   const lastFocusedRef = useRef(null)
   useEffect(() => {
@@ -341,6 +355,13 @@ export default function MapView({
       {!loaded && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-50">
           <Spinner label={t('map.loading')} />
+        </div>
+      )}
+      {loaded && !mapError && customers.length > 0 && customers.every((c) => c.latitude == null) && (
+        <div className="absolute bottom-16 left-0 right-0 flex justify-center z-10">
+          <div className="rounded-2xl bg-white/90 px-4 py-2 text-sm text-slate-600 shadow-lg backdrop-blur">
+            {t('map.noResults')}
+          </div>
         </div>
       )}
     </div>
