@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Snowflake, Mail, Lock, AlertTriangle } from 'lucide-react'
+import { Mail, Lock, AlertTriangle } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { Field, Input } from '../components/ui/Field'
 import { useAuth } from '../hooks/useAuth'
@@ -58,9 +58,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-700 shadow-lg">
-            <Snowflake className="h-9 w-9 text-white" />
-          </div>
+          <img src="/icons/logo.jpg" alt="Germa" className="mb-4 h-16 w-16 rounded-2xl object-cover shadow-lg" />
           <h1 className="text-xl font-bold text-slate-900">Germa Field</h1>
           <p className="text-sm text-slate-500">{t('app.tagline')}</p>
         </div>

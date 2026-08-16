@@ -12,7 +12,6 @@ import {
   Users,
   ScrollText,
   LogOut,
-  Snowflake,
   MoreHorizontal,
   Wifi,
   WifiOff,
@@ -40,9 +39,7 @@ const MOBILE_PRIMARY = ['/dashboard', '/map', '/customers', '/visits']
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-700">
-        <Snowflake className="h-5 w-5 text-white" />
-      </div>
+      <img src="/icons/logo.jpg" alt="Germa" className="h-9 w-9 rounded-xl object-cover" />
       <div>
         <p className="text-sm font-bold leading-tight text-slate-900">Germa</p>
         <p className="text-xs leading-tight text-slate-500">Field Management</p>
