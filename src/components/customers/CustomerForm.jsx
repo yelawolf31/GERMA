@@ -76,7 +76,7 @@ export default function CustomerForm({ initialValues, onSubmit, onCancel, submit
             value={form.name}
             onChange={(e) => setField('name', e.target.value)}
             error={errors.name}
-            placeholder="Ex : Superette El Amel"
+            placeholder={t('customers.name') + '...'}
           />
         </Field>
 
@@ -116,7 +116,7 @@ export default function CustomerForm({ initialValues, onSubmit, onCancel, submit
             value={form.commune}
             onChange={(e) => setField('commune', e.target.value)}
             error={errors.commune}
-            placeholder="Ex : Bir El Djir"
+            placeholder={t('customers.commune') + '...'}
           />
         </Field>
 
@@ -157,7 +157,7 @@ export default function CustomerForm({ initialValues, onSubmit, onCancel, submit
                   type="button"
                   onClick={() => setLocation('', '')}
                   className="rounded p-1 text-slate-400 hover:bg-slate-200"
-                  aria-label="Effacer"
+                  aria-label={t('common.close')}
                 >
                   <X className="h-4 w-4" />
                 </button>

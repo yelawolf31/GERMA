@@ -1,7 +1,9 @@
 import Modal from './Modal'
 import Button from './Button'
+import { useTranslation } from '../../i18n'
 
-export default function ConfirmDialog({ open, title, message, confirmLabel = 'Confirmer', onConfirm, onCancel, loading = false }) {
+export default function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel, loading = false }) {
+  const { t } = useTranslation()
   return (
     <Modal
       open={open}
@@ -11,10 +13,10 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = 'Co
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onCancel} disabled={loading}>
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button variant="danger" onClick={onConfirm} loading={loading}>
-            {confirmLabel}
+            {confirmLabel || t('common.confirm')}
           </Button>
         </div>
       }

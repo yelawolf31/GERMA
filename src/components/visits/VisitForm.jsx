@@ -211,7 +211,7 @@ export default function VisitForm({ onSubmit, onCancel, saving }) {
                     type="button"
                     onClick={() => removePhoto(index)}
                     className="absolute right-1 top-1 rounded-full bg-slate-900/70 p-1 text-white hover:bg-red-600"
-                    aria-label="Retirer"
+                    aria-label={t('common.delete')}
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>

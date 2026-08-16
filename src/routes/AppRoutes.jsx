@@ -26,7 +26,7 @@ const NotFound = lazy(() => import('../pages/NotFound'))
 function PageLoader() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <Spinner label="Chargement..." />
+      <Spinner label="Loading..." />
     </div>
   )
 }

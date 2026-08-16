@@ -60,7 +60,7 @@ export function AuthProvider({ children }) {
   }, [loadProfile])
 
   const signIn = useCallback(async (email, password) => {
-    if (!supabase) throw new Error('Supabase non configuré')
+    if (!supabase) throw new Error('Supabase not configured')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
   }, [])
@@ -77,7 +77,7 @@ export function AuthProvider({ children }) {
 
   const updateProfileName = useCallback(
     async (fullName) => {
-      if (!session?.user) throw new Error('Non connecté')
+      if (!session?.user) throw new Error('Not authenticated')
       const { error } = await supabase
         .from('profiles')
         .update({ full_name: fullName })

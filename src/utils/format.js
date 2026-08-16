@@ -5,6 +5,32 @@ const FR_MONTHS_LONG = [
 ]
 const FR_DAYS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam']
 
+function getLocale() {
+  try {
+    return document.documentElement.lang || 'fr'
+  } catch {
+    return 'fr'
+  }
+}
+
+function shortMonth(locale, monthIndex) {
+  try {
+    const d = new Date(2024, monthIndex, 1)
+    return d.toLocaleString(locale, { month: 'short' })
+  } catch {
+    return FR_MONTHS[monthIndex]
+  }
+}
+
+function longMonth(locale, monthIndex) {
+  try {
+    const d = new Date(2024, monthIndex, 1)
+    return d.toLocaleString(locale, { month: 'long' })
+  } catch {
+    return FR_MONTHS_LONG[monthIndex]
+  }
+}
+
 /**
  * Format an ISO date to dd/mm/yyyy.
  */
@@ -46,7 +72,8 @@ export function formatDateShort(value) {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return '—'
-  return `${date.getDate()} ${FR_MONTHS_LONG[date.getMonth()]} ${date.getFullYear()}`
+  const locale = getLocale()
+  return `${date.getDate()} ${longMonth(locale, date.getMonth())} ${date.getFullYear()}`
 }
 
 /**
@@ -61,10 +88,10 @@ export function formatRelativeDate(value, t) {
   const target = new Date(date.getFullYear(), date.getMonth(), date.getDate())
   const daysDiff = Math.round((today - target) / 86400000)
 
-  if (daysDiff === 0) return t ? t('common.today') : "Aujourd'hui"
-  if (daysDiff === 1) return t ? t('visits.yesterday') : 'Hier'
-  if (daysDiff > 1 && daysDiff <= 7) return `Il y a ${daysDiff} jours`
-  if (daysDiff < 0) return 'À venir'
+  if (daysDiff === 0) return t ? t('common.today') : 'Today'
+  if (daysDiff === 1) return t ? t('visits.yesterday') : 'Yesterday'
+  if (daysDiff > 1 && daysDiff <= 7) return t ? `${daysDiff} ${t('common.previous').toLowerCase()}` : `${daysDiff} days ago`
+  if (daysDiff < 0) return t ? t('common.next') : 'Upcoming'
   return formatDate(value)
 }
 
@@ -75,7 +102,8 @@ export function formatShortDay(value) {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return '—'
-  return `${date.getDate()} ${FR_MONTHS[date.getMonth()]}`
+  const locale = getLocale()
+  return `${date.getDate()} ${shortMonth(locale, date.getMonth())}`
 }
 
 /**
@@ -85,7 +113,12 @@ export function formatWeekday(value) {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return '—'
-  return FR_DAYS[date.getDay()]
+  const locale = getLocale()
+  try {
+    return date.toLocaleString(locale, { weekday: 'short' })
+  } catch {
+    return FR_DAYS[date.getDay()]
+  }
 }
 
 /**

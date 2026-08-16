@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { fr } from './fr'
 import { ar } from './ar'
 import { en } from './en'
@@ -47,6 +47,12 @@ export function TranslationProvider({ children }) {
       // ignore storage errors
     }
   }, [])
+
+  useEffect(() => {
+    const dir = language === 'ar' ? 'rtl' : 'ltr'
+    document.documentElement.setAttribute('dir', dir)
+    document.documentElement.setAttribute('lang', language)
+  }, [language])
 
   const value = useMemo(
     () => ({ language, changeLanguage, t, dir: language === 'ar' ? 'rtl' : 'ltr' }),

@@ -73,7 +73,7 @@ export function ToastProvider({ children }) {
                 type="button"
                 onClick={() => removeToast(item.id)}
                 className="rounded p-0.5 hover:opacity-70"
-                aria-label="Fermer"
+                aria-label="Close"
               >
                 <X className="h-4 w-4" />
               </button>

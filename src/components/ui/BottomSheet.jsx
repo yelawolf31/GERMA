@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
+import { useTranslation } from '../../i18n'
 
 /**
  * Mobile bottom sheet. On desktop it behaves like a side panel.
  */
 export default function BottomSheet({ open, onClose, title, children, maxHeight = '80vh' }) {
+  const { t } = useTranslation()
   useEffect(() => {
     if (!open) return
     const onKeyDown = (event) => {
@@ -31,7 +33,7 @@ export default function BottomSheet({ open, onClose, title, children, maxHeight 
             type="button"
             onClick={onClose}
             className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
-            aria-label="Fermer"
+            aria-label={t('common.close')}
           >
             <X className="h-5 w-5" />
           </button>

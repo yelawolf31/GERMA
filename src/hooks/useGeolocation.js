@@ -21,7 +21,7 @@ export function useGeolocation(options = {}) {
     () =>
       new Promise((resolve) => {
         if (!isSupported) {
-          setError({ code: 'unsupported', message: 'Geolocalisation non supportée' })
+          setError({ code: 'unsupported', message: 'Geolocation not supported' })
           setLoading(false)
           resolve(null)
           return

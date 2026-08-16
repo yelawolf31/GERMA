@@ -293,7 +293,7 @@ export default function CustomerDetails() {
           </Card>
 
           <Card>
-            <CardHeader title={t('customers.visitHistory')} subtitle={`${visits.length} visites`} />
+            <CardHeader title={t('customers.visitHistory')} subtitle={`${visits.length} ${t('nav.visits')}`} />
             {visits.length === 0 ? (
               <CardBody>
                 <EmptyState title={t('customers.noVisits')} />

@@ -102,7 +102,7 @@ export default function MapFilters({ filters, onChange, open, onToggle }) {
             onClick={() => onChange({ refrigeratorStatus: [], customerStatus: [], visits: [], hasOpenIssues: false })}
             className="w-full rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200"
           >
-            Réinitialiser
+            {t('common.reset')}
           </button>
         </div>
       )}

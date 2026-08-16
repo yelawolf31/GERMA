@@ -5,6 +5,33 @@ const REFRIGERATOR_SELECT = `
   customer:customers(name, wilaya, commune, latitude, longitude, status)
 `
 
+const VALID_STATUSES = ['working', 'needs_maintenance', 'broken', 'removed']
+const MAX_STRING_LENGTH = 500
+
+function sanitize(str) {
+  if (typeof str !== 'string') return null
+  const trimmed = str.trim()
+  return trimmed.length > MAX_STRING_LENGTH ? trimmed.slice(0, MAX_STRING_LENGTH) : trimmed
+}
+
+function validateRefrigeratorPayload(payload, { partial = false } = {}) {
+  if (!payload || typeof payload !== 'object') throw new Error('Invalid payload')
+  const sanitized = {}
+  if (!partial || payload.customer_id !== undefined) {
+    if (!payload.customer_id && !partial) throw new Error('Customer is required')
+    sanitized.customer_id = payload.customer_id
+  }
+  if (payload.serial_number !== undefined) sanitized.serial_number = sanitize(payload.serial_number)
+  if (payload.model !== undefined) sanitized.model = sanitize(payload.model)
+  if (payload.installation_date !== undefined) sanitized.installation_date = payload.installation_date
+  if (payload.notes !== undefined) sanitized.notes = sanitize(payload.notes)
+  if (payload.status !== undefined) {
+    if (!VALID_STATUSES.includes(payload.status)) throw new Error('Invalid status')
+    sanitized.status = payload.status
+  }
+  return sanitized
+}
+
 export async function fetchRefrigerators({ customerId = null, search = null } = {}) {
   let query = supabase.from('refrigerators').select(REFRIGERATOR_SELECT).order('serial_number')
 
@@ -40,15 +67,16 @@ export async function fetchRefrigeratorById(id) {
  * Create a refrigerator. Audit logging is handled by a DB trigger.
  */
 export async function createRefrigerator(payload) {
+  const validated = validateRefrigeratorPayload(payload)
   const { data, error } = await supabase
     .from('refrigerators')
     .insert({
-      customer_id: payload.customer_id,
-      serial_number: payload.serial_number || null,
-      model: payload.model || null,
-      installation_date: payload.installation_date || null,
-      status: payload.status || 'working',
-      notes: payload.notes || null,
+      customer_id: validated.customer_id,
+      serial_number: validated.serial_number || null,
+      model: validated.model || null,
+      installation_date: validated.installation_date || null,
+      status: validated.status || 'working',
+      notes: validated.notes || null,
     })
     .select()
     .single()
@@ -60,14 +88,9 @@ export async function createRefrigerator(payload) {
  * Update non-status fields. Admin only (RLS enforced).
  */
 export async function updateRefrigerator(id, payload) {
-  const updates = {}
-  if (payload.serial_number !== undefined) updates.serial_number = payload.serial_number
-  if (payload.model !== undefined) updates.model = payload.model
-  if (payload.installation_date !== undefined) updates.installation_date = payload.installation_date
-  if (payload.notes !== undefined) updates.notes = payload.notes
-  if (payload.status !== undefined) updates.status = payload.status
+  const validated = validateRefrigeratorPayload(payload, { partial: true })
 
-  const { data, error } = await supabase.from('refrigerators').update(updates).eq('id', id).select().single()
+  const { data, error } = await supabase.from('refrigerators').update(validated).eq('id', id).select().single()
   if (error) throw new Error(error.message)
   return data
 }

@@ -60,3 +60,25 @@ input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* RTL support */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .sm\:left-4 {
+  left: auto;
+  right: 1rem;
+}
+
+[dir="rtl"] .sm\:right-auto {
+  right: auto;
+  left: auto;
+}
+
+/* RTL text alignment */
+[dir="rtl"] input[type="text"],
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+}

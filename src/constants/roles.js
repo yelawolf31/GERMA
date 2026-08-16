@@ -4,8 +4,8 @@ export const ROLES = {
 }
 
 export const ROLE_LABELS = {
-  [ROLES.ADMIN]: 'Administrateur',
-  [ROLES.SUPERVISOR]: 'Superviseur',
+  [ROLES.ADMIN]: 'Admin',
+  [ROLES.SUPERVISOR]: 'Supervisor',
 }
 
 export function isAdmin(role) {

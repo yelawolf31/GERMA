@@ -54,6 +54,7 @@ export default function MapView({
   const containerRef = useRef(null)
   const mapInstanceRef = useRef(null)
   const [loaded, setLoaded] = useState(false)
+  const [mapError, setMapError] = useState(null)
   const { t } = useTranslation()
 
   // Track latest customers for click handling
@@ -85,6 +86,11 @@ export default function MapView({
 
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right')
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right')
+
+    map.on('error', (e) => {
+      console.error('Mapbox error:', e.error?.message || e)
+      setMapError(e.error?.message || 'Map failed to load')
+    })
 
     if (showUserLocation) {
       const geolocate = new mapboxgl.GeolocateControl({
@@ -319,7 +325,20 @@ export default function MapView({
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
-      {!loaded && (
+      {mapError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-50 p-6 text-center">
+          <div>
+            <p className="mb-2 text-sm font-medium text-red-600">{mapError}</p>
+            <button
+              onClick={() => { setMapError(null); setLoaded(false); mapInstanceRef.current?.resize() }}
+              className="text-xs text-brand-700 underline hover:no-underline"
+            >
+              {t('common.retry')}
+            </button>
+          </div>
+        </div>
+      )}
+      {!loaded && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-50">
           <Spinner label={t('map.loading')} />
         </div>

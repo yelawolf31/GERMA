@@ -35,8 +35,10 @@ function ChartCard({ title, children, height = 260 }) {
 export default function Reports() {
   const { t } = useTranslation()
   const { customers, loading: loadingCustomers } = useMapData()
-  const { visits, loading: loadingVisits } = useVisits()
-  const { issues, loading: loadingIssues } = useIssues()
+  const { visits, loading: loadingVisits, error: visitsError } = useVisits()
+  const { issues, loading: loadingIssues, error: issuesError } = useIssues()
+
+  const loading = loadingCustomers || loadingVisits || loadingIssues
 
   const refrigeratorsByStatus = useMemo(() => {
     const all = customers.flatMap((c) => c.refrigerators)
@@ -91,7 +93,7 @@ export default function Reports() {
     return Object.entries(counts).map(([key, value]) => ({ name: t(`issues.${key}`), value, color: COLORS[key] }))
   }, [issues, t])
 
-  if (loadingCustomers || loadingVisits || loadingIssues) {
+  if (loading) {
     return (
       <div className="p-4 sm:p-6">
         <Spinner label={t('common.loadingData')} />
@@ -104,6 +106,13 @@ export default function Reports() {
   return (
     <div className="p-4 sm:p-6">
       <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">{t('reports.title')}</h1>
+
+      {(visitsError || issuesError) && (
+        <div className="mt-3 rounded-lg border border-orange-200 bg-orange-50 px-4 py-2 text-sm text-orange-700">
+          {visitsError && <p>{t('reports.visitsByDay')}: {t('common.error')}</p>}
+          {issuesError && <p>{t('reports.issuesByType')}: {t('common.error')}</p>}
+        </div>
+      )}
 
       <div className="mt-5 grid gap-6 lg:grid-cols-2">
         <ChartCard title={t('reports.refrigeratorsByStatus')}>
