@@ -33,7 +33,27 @@ create policy "Users can update their own profile"
   on public.profiles for update
   to authenticated
   using (id = auth.uid())
-  with check (id = auth.uid() and role is not distinct from old.role);
+  with check (id = auth.uid());
+
+-- `old` cannot be referenced in WITH CHECK, so role protection is
+-- enforced by a trigger instead: only admins may change roles.
+create or replace function public.protect_profile_role()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if new.role is distinct from old.role and not public.is_admin() then
+    raise exception 'Seuls les administrateurs peuvent changer les rôles';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_protect_role on public.profiles;
+create trigger profiles_protect_role
+  before update on public.profiles
+  for each row execute function public.protect_profile_role();
 
 drop policy if exists "Admins can update any profile" on public.profiles;
 create policy "Admins can update any profile"
@@ -93,23 +113,41 @@ create policy "Admins can update refrigerators"
   to authenticated
   using (public.is_admin());
 
--- Supervisors may ONLY change `status`. Every other column must
--- remain identical to its old value, otherwise the row is rejected.
+-- Supervisors may UPDATE but may ONLY change `status`. The column
+-- restriction cannot live in WITH CHECK (OLD is unavailable there),
+-- so it is enforced by the protect_refrigerator_update trigger below.
 drop policy if exists "Supervisors can update refrigerator status" on public.refrigerators;
 create policy "Supervisors can update refrigerator status"
   on public.refrigerators for update
   to authenticated
   using (not public.is_admin())
-  with check (
-    not public.is_admin()
-    and status is distinct from old.status
-    and customer_id = old.customer_id
-    and serial_number is not distinct from old.serial_number
-    and model is not distinct from old.model
-    and installation_date is not distinct from old.installation_date
-    and created_by is not distinct from old.created_by
-    and created_at is not distinct from old.created_at
-  );
+  with check (not public.is_admin());
+
+create or replace function public.protect_refrigerator_update()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    if (new.customer_id is distinct from old.customer_id)
+       or (new.serial_number is distinct from old.serial_number)
+       or (new.model is distinct from old.model)
+       or (new.installation_date is distinct from old.installation_date)
+       or (new.notes is distinct from old.notes)
+       or (new.created_by is distinct from old.created_by)
+       or (new.created_at is distinct from old.created_at) then
+      raise exception 'Les superviseurs ne peuvent modifier que le statut du réfrigérateur';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists refrigerators_protect_update on public.refrigerators;
+create trigger refrigerators_protect_update
+  before update on public.refrigerators
+  for each row execute function public.protect_refrigerator_update();
 
 drop policy if exists "Admins can delete refrigerators" on public.refrigerators;
 create policy "Admins can delete refrigerators"

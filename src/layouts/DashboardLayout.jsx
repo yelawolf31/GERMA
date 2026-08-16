@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -96,7 +96,7 @@ export default function DashboardLayout() {
   const [moreOpen, setMoreOpen] = useState(false)
   const [online, setOnline] = useState(navigator.onLine)
 
-  useState(() => {
+  useEffect(() => {
     const onOnline = () => setOnline(true)
     const onOffline = () => setOnline(false)
     window.addEventListener('online', onOnline)
@@ -105,7 +105,7 @@ export default function DashboardLayout() {
       window.removeEventListener('online', onOnline)
       window.removeEventListener('offline', onOffline)
     }
-  })
+  }, [])
 
   const visibleItems = NAV_ITEMS.filter((item) => item.roles.includes(role))
   const desktopItems = visibleItems

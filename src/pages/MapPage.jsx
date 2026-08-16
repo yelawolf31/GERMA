@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search, Store, LocateFixed } from 'lucide-react'
 import MapView from '../components/map/MapView'
@@ -198,14 +198,15 @@ function UrlSelectionHandler({ customers, onPick }) {
   const handledRef = useRef(null)
   const customerId = searchParams.get('customer')
 
-  if (customerId && handledRef.current !== customerId) {
-    handledRef.current = customerId
+  useEffect(() => {
+    if (!customerId || handledRef.current === customerId) return
     const customer = customers.find((c) => c.id === customerId)
     if (customer) {
-      // Defer so the map is ready
-      setTimeout(() => onPick(customer), 100)
+      handledRef.current = customerId
+      const timer = setTimeout(() => onPick(customer), 100)
+      return () => clearTimeout(timer)
     }
-  }
+  }, [customerId, customers, onPick])
 
   return null
 }

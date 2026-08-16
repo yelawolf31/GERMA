@@ -39,10 +39,10 @@ export function AuthProvider({ children }) {
 
     let mounted = true
 
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
       if (!mounted) return
       setSession(currentSession)
-      if (currentSession?.user) loadProfile(currentSession.user)
+      if (currentSession?.user) await loadProfile(currentSession.user)
       setLoading(false)
       setInitialized(true)
     })

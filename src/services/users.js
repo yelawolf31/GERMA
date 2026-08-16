@@ -30,6 +30,7 @@ export async function createUserByAdmin(payload) {
  * List users (profiles) — admin only via RLS + UI guard.
  */
 export async function fetchUserProfiles() {
+  if (!supabase) throw new Error('Supabase non configuré')
   const { data, error } = await supabase
     .from('profiles')
     .select('id, full_name, email, role, created_at')
@@ -42,6 +43,7 @@ export async function fetchUserProfiles() {
  * Update a user's profile (own name, or admin may update role).
  */
 export async function updateProfile(id, updates) {
+  if (!supabase) throw new Error('Supabase non configuré')
   const { data, error } = await supabase.from('profiles').update(updates).eq('id', id).select().single()
   if (error) throw new Error(error.message)
   return data

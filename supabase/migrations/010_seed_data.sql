@@ -6,6 +6,10 @@
 --   supervisor@germa.dz / Super123!
 -- ============================================================
 
+-- pgcrypto provides crypt()/gen_salt(); install into the `extensions` schema
+-- (Supabase convention) and call it fully qualified.
+create extension if not exists pgcrypto with schema extensions;
+
 -- -----------------------------------------------------------
 -- Demo auth users (password hashed with bcrypt)
 -- -----------------------------------------------------------
@@ -19,7 +23,7 @@ values
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'admin@germa.dz',
-    crypt('Admin123!', gen_salt('bf')),
+    extensions.crypt('Admin123!', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}',
     '{"full_name":"Hani Admin","role":"admin"}',
@@ -30,12 +34,41 @@ values
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'supervisor@germa.dz',
-    crypt('Super123!', gen_salt('bf')),
+    extensions.crypt('Super123!', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}',
     '{"full_name":"Samir Supervisor","role":"supervisor"}',
     now(), now()
   )
+on conflict (id) do nothing;
+
+-- GoTrue expects the nullable string columns to be '' (not NULL) and
+-- needs a matching identity row for email/password sign-in. Without
+-- these, login fails with "Database error querying schema".
+update auth.users
+set
+  confirmation_token = coalesce(confirmation_token, ''),
+  recovery_token = coalesce(recovery_token, ''),
+  email_change = coalesce(email_change, ''),
+  email_change_token_new = coalesce(email_change_token_new, ''),
+  email_change_token_current = coalesce(email_change_token_current, ''),
+  phone_change = coalesce(phone_change, ''),
+  phone_change_token = coalesce(phone_change_token, ''),
+  reauthentication_token = coalesce(reauthentication_token, '')
+where email in ('admin@germa.dz', 'supervisor@germa.dz');
+
+insert into auth.identities (
+  id, user_id, identity_data, provider, provider_id, last_sign_in_at, created_at, updated_at
+)
+select
+  u.id,
+  u.id,
+  jsonb_build_object('sub', u.id, 'email', u.email),
+  'email',
+  u.email,
+  now(), now(), now()
+from auth.users u
+where u.email in ('admin@germa.dz', 'supervisor@germa.dz')
 on conflict (id) do nothing;
 
 -- Profiles (the handle_new_user trigger also runs; upsert keeps them in sync)
