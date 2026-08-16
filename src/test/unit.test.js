@@ -8,9 +8,15 @@ import {
   isCoordinate,
   validateLogin,
   validateVisit,
+  validateCustomer,
+  validateRefrigerator,
+  validateIssue,
 } from '../utils/validators'
 import { haversineKm, formatDistance, sortCustomersByDistance } from '../utils/geo'
 import { MARKER_COLORS } from '../constants/statuses'
+import { fr } from '../i18n/fr'
+import { en } from '../i18n/en'
+import { ar } from '../i18n/ar'
 
 const t = (key) => key
 
@@ -124,5 +130,172 @@ describe('geo', () => {
     const sorted = sortCustomersByDistance(customers, { latitude: 35.7, longitude: -0.5 })
     expect(sorted[0].id).toBe('near')
     expect(typeof sorted[0].distanceKm).toBe('number')
+  })
+
+  it('sortCustomersByDistance returns original when position is null', () => {
+    const customers = [{ id: 'a', latitude: 35, longitude: 0 }]
+    expect(sortCustomersByDistance(customers, null)).toEqual(customers)
+  })
+
+  it('sortCustomersByDistance filters out customers without coordinates', () => {
+    const customers = [
+      { id: 'valid', latitude: 35.7, longitude: -0.5 },
+      { id: 'no-coords', latitude: null, longitude: null },
+    ]
+    const sorted = sortCustomersByDistance(customers, { latitude: 35.7, longitude: -0.5 })
+    expect(sorted).toHaveLength(1)
+    expect(sorted[0].id).toBe('valid')
+  })
+})
+
+describe('validateCustomer', () => {
+  it('requires name, wilaya, commune', () => {
+    const result = validateCustomer({ name: '', wilaya: '', commune: '' }, t)
+    expect(result.valid).toBe(false)
+    expect(result.errors.name).toBeDefined()
+    expect(result.errors.wilaya).toBeDefined()
+    expect(result.errors.commune).toBeDefined()
+  })
+
+  it('passes with all required fields', () => {
+    const result = validateCustomer({ name: 'Test', wilaya: 'Oran', commune: 'Bir El Djir' }, t)
+    expect(result.valid).toBe(true)
+    expect(Object.keys(result.errors)).toHaveLength(0)
+  })
+
+  it('validates latitude range', () => {
+    const result = validateCustomer({ name: 'T', wilaya: 'O', commune: 'B', latitude: '999', longitude: '0' }, t)
+    expect(result.valid).toBe(false)
+    expect(result.errors.latitude).toBeDefined()
+  })
+
+  it('validates longitude range', () => {
+    const result = validateCustomer({ name: 'T', wilaya: 'O', commune: 'B', latitude: '0', longitude: '999' }, t)
+    expect(result.valid).toBe(false)
+    expect(result.errors.longitude).toBeDefined()
+  })
+
+  it('allows empty coordinates', () => {
+    const result = validateCustomer({ name: 'T', wilaya: 'O', commune: 'B', latitude: '', longitude: '' }, t)
+    expect(result.valid).toBe(true)
+  })
+})
+
+describe('validateRefrigerator', () => {
+  it('requires customer_id', () => {
+    const result = validateRefrigerator({ customer_id: '' }, t)
+    expect(result.valid).toBe(false)
+    expect(result.errors.customer_id).toBeDefined()
+  })
+
+  it('passes with customer_id', () => {
+    const result = validateRefrigerator({ customer_id: 'uuid-123' }, t)
+    expect(result.valid).toBe(true)
+  })
+})
+
+describe('validateIssue', () => {
+  it('requires issue_type, priority, description', () => {
+    const result = validateIssue({ issue_type: '', priority: '', description: '' }, t)
+    expect(result.valid).toBe(false)
+    expect(result.errors.issue_type).toBeDefined()
+    expect(result.errors.priority).toBeDefined()
+    expect(result.errors.description).toBeDefined()
+  })
+
+  it('passes with all required fields', () => {
+    const result = validateIssue({ issue_type: 'cooling_problem', priority: 'high', description: 'Broken' }, t)
+    expect(result.valid).toBe(true)
+  })
+})
+
+function resolveKey(dict, key) {
+  return key.split('.').reduce((acc, part) => (acc == null ? undefined : acc[part]), dict)
+}
+
+function makeT(lang) {
+  const dict = { fr, en, ar }
+  return (key) => {
+    let value = resolveKey(dict[lang] || dict.fr, key)
+    if (value == null) value = resolveKey(dict.fr, key)
+    if (value == null) return key
+    return value
+  }
+}
+
+describe('i18n translations', () => {
+  const frT = makeT('fr')
+  const enT = makeT('en')
+  const arT = makeT('ar')
+
+  it('resolves nested keys correctly', () => {
+    expect(frT('app.name')).toBe('Germa Field')
+    expect(enT('app.name')).toBe('Germa Field')
+    expect(arT('app.name')).toBe('جيرما الميدان')
+  })
+
+  it('returns key when not found', () => {
+    expect(frT('nonexistent.key')).toBe('nonexistent.key')
+    expect(enT('nonexistent.key')).toBe('nonexistent.key')
+  })
+
+  it('all three languages have the same sections', () => {
+    const sections = ['app', 'auth', 'nav', 'dashboard', 'customers', 'refrigerators', 'visits', 'issues', 'map', 'reports', 'settings', 'common']
+    for (const section of sections) {
+      expect(fr[section]).toBeDefined()
+      expect(en[section]).toBeDefined()
+      expect(ar[section]).toBeDefined()
+    }
+  })
+
+  it('snake_case aliases match camelCase values', () => {
+    expect(fr.issues.cooling_problem).toBe(fr.issues.coolingProblem)
+    expect(fr.issues.electrical_problem).toBe(fr.issues.electricalProblem)
+    expect(fr.issues.door_problem).toBe(fr.issues.doorProblem)
+    expect(fr.issues.lighting_problem).toBe(fr.issues.lightingProblem)
+    expect(fr.issues.cleanliness_problem).toBe(fr.issues.cleanlinessProblem)
+    expect(fr.issues.in_progress).toBe(fr.issues.inProgress)
+    expect(fr.refrigerators.needs_maintenance).toBe(fr.refrigerators.needsMaintenance)
+
+    expect(en.issues.cooling_problem).toBe(en.issues.coolingProblem)
+    expect(ar.issues.cooling_problem).toBe(ar.issues.coolingProblem)
+  })
+
+  it('all languages have issues.medium', () => {
+    expect(fr.issues.medium).toBeDefined()
+    expect(en.issues.medium).toBeDefined()
+    expect(ar.issues.medium).toBeDefined()
+  })
+
+  it('all languages have users section', () => {
+    expect(fr.users.admin).toBeDefined()
+    expect(en.users.admin).toBeDefined()
+    expect(ar.users.admin).toBeDefined()
+  })
+
+  it('all languages have audit section', () => {
+    expect(fr.audit.title).toBeDefined()
+    expect(en.audit.title).toBeDefined()
+    expect(ar.audit.title).toBeDefined()
+  })
+
+  it('all languages have businessType section', () => {
+    expect(fr.businessType.superette).toBeDefined()
+    expect(en.businessType.superette).toBeDefined()
+    expect(ar.businessType.superette).toBeDefined()
+  })
+
+  it('all languages have common.reset', () => {
+    expect(fr.common.reset).toBeDefined()
+    expect(en.common.reset).toBeDefined()
+    expect(ar.common.reset).toBeDefined()
+  })
+
+  it('fr has in_progress alias', () => {
+    expect(fr.issues.in_progress).toBe('En cours')
+  })
+
+  it('en has in_progress alias', () => {
+    expect(en.issues.in_progress).toBe('In progress')
   })
 })
