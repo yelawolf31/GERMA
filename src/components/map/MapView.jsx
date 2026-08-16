@@ -115,11 +115,11 @@ export default function MapView({
           'circle-color': [
             'step',
             ['get', 'point_count'],
-            '#0d9488',
+            '#dc2626',
             10,
-            '#0f766e',
+            '#b91c1c',
             30,
-            '#134e4a',
+            '#7f1d1d',
           ],
           'circle-radius': ['step', ['get', 'point_count'], 20, 10, 28, 30, 36],
           'circle-stroke-width': 2,
@@ -259,7 +259,7 @@ export default function MapView({
         source: 'selected-source',
         paint: {
           'circle-radius': 16,
-          'circle-color': '#0f766e',
+          'circle-color': '#b91c1c',
           'circle-opacity': 0.25,
           'circle-stroke-width': 0,
         },
@@ -297,7 +297,7 @@ export default function MapView({
         source: 'picked-source',
         paint: {
           'circle-radius': 10,
-          'circle-color': '#0f766e',
+          'circle-color': '#b91c1c',
           'circle-stroke-width': 3,
           'circle-stroke-color': '#ffffff',
         },

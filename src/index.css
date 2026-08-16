@@ -3,17 +3,17 @@
 @theme {
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
 
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-200: #99f6e4;
-  --color-brand-300: #5eead4;
-  --color-brand-400: #2dd4bf;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
-  --color-brand-900: #134e4a;
-  --color-brand-950: #042f2e;
+  --color-brand-50:  #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-200: #fecaca;
+  --color-brand-300: #fca5a5;
+  --color-brand-400: #f87171;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #dc2626;
+  --color-brand-700: #b91c1c;
+  --color-brand-800: #991b1b;
+  --color-brand-900: #7f1d1d;
+  --color-brand-950: #450a0a;
 
   --color-safe-top: env(safe-area-inset-top);
   --color-safe-bottom: env(safe-area-inset-bottom);
@@ -26,7 +26,7 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+  @apply bg-white text-slate-800 antialiased;
   overscroll-behavior-y: none;
 }
 

@@ -4,7 +4,7 @@ const TONES = {
   red: 'bg-red-100 text-red-700',
   orange: 'bg-orange-100 text-orange-700',
   blue: 'bg-sky-100 text-sky-700',
-  teal: 'bg-teal-100 text-teal-700',
+  teal: 'bg-blue-100 text-blue-700',
   yellow: 'bg-amber-100 text-amber-800',
   purple: 'bg-purple-100 text-purple-700',
 }

@@ -129,7 +129,7 @@ export default function Reports() {
               <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={1} />
               <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" fill="#0d9488" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="count" fill="#dc2626" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
