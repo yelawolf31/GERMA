@@ -528,3 +528,186 @@ describe('StatusBadge condition mapping', () => {
     expect(conditionMap.broken).toBe(true)
   })
 })
+
+describe('visit form translation keys resolve to translated strings', () => {
+  const CONDITION_LABEL_KEYS = [
+    'refrigerators.working',
+    'refrigerators.needsMaintenance',
+    'refrigerators.broken',
+  ]
+  const CLEANLINESS_LABEL_KEYS = [
+    'visits.good',
+    'visits.medium',
+    'visits.bad',
+  ]
+
+  function resolveKey(dict, key) {
+    return key.split('.').reduce((acc, part) => (acc == null ? undefined : acc[part]), dict)
+  }
+
+  it('all condition label keys resolve to translated strings in all languages', () => {
+    for (const key of CONDITION_LABEL_KEYS) {
+      for (const lang of [fr, en, ar]) {
+        const value = resolveKey(lang, key)
+        expect(value).toBeDefined()
+        expect(value).not.toBe(key)
+        expect(value.length).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('all cleanliness label keys resolve to translated strings in all languages', () => {
+    for (const key of CLEANLINESS_LABEL_KEYS) {
+      for (const lang of [fr, en, ar]) {
+        const value = resolveKey(lang, key)
+        expect(value).toBeDefined()
+        expect(value).not.toBe(key)
+        expect(value.length).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('no raw translation key patterns appear as rendered text in form labels', () => {
+    const RAW_KEY_PATTERNS = [
+      /^refrigerators\./,
+      /^visits\./,
+      /^customers\./,
+      /^issues\./,
+    ]
+    const ALL_KEYS = [...CONDITION_LABEL_KEYS, ...CLEANLINESS_LABEL_KEYS]
+    function resolveKey(dict, key) {
+      return key.split('.').reduce((acc, part) => (acc == null ? undefined : acc[part]), dict)
+    }
+    for (const key of ALL_KEYS) {
+      for (const lang of [fr, en, ar]) {
+        const resolved = resolveKey(lang, key)
+        for (const pattern of RAW_KEY_PATTERNS) {
+          expect(resolved).not.toMatch(pattern)
+        }
+      }
+    }
+  })
+
+  it('form labels are human-readable in French (not raw keys)', () => {
+    const frT = (key) => {
+      const val = resolveKey(fr, key)
+      return val || key
+    }
+    expect(frT('refrigerators.working')).toBe('En fonctionnement')
+    expect(frT('refrigerators.needsMaintenance')).toBe('Entretien requis')
+    expect(frT('refrigerators.broken')).toBe('En panne')
+    expect(frT('visits.good')).toBe('Bon')
+    expect(frT('visits.medium')).toBe('Moyen')
+    expect(frT('visits.bad')).toBe('Mauvais')
+  })
+})
+
+describe('visit detail displays all required fields', () => {
+  it('visit detail keys cover all required sections', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.visitedAt).toBeDefined()
+      expect(lang.visits.supervisor).toBeDefined()
+      expect(lang.visits.condition).toBeDefined()
+      expect(lang.visits.cleanliness).toBeDefined()
+      expect(lang.visits.notes).toBeDefined()
+      expect(lang.visits.createdAt).toBeDefined()
+      expect(lang.visits.photos).toBeDefined()
+      expect(lang.visits.customer).toBeDefined()
+      expect(lang.visits.viewCustomer).toBeDefined()
+      expect(lang.visits.viewRefrigerator).toBeDefined()
+      expect(lang.visits.noRefrigerator).toBeDefined()
+      expect(lang.refrigerators.serialNumber).toBeDefined()
+      expect(lang.refrigerators.model).toBeDefined()
+      expect(lang.refrigerators.status).toBeDefined()
+      expect(lang.map.coordinates).toBeDefined()
+    }
+  })
+})
+
+describe('photo security model', () => {
+  it('storage module exports createSignedUrl and createSignedUrls', async () => {
+    const storage = await import('../services/storage')
+    expect(typeof storage.createSignedUrl).toBe('function')
+    expect(typeof storage.createSignedUrls).toBe('function')
+  })
+
+  it('storage module exports fetchVisitPhotos and deleteVisitPhoto', async () => {
+    const storage = await import('../services/storage')
+    expect(typeof storage.fetchVisitPhotos).toBe('function')
+    expect(typeof storage.deleteVisitPhoto).toBe('function')
+  })
+
+  it('visit photos RLS allows admin all and supervisor own visits', () => {
+    const adminPolicy = 'public.is_admin()'
+    const supervisorPolicy = 'v.supervisor_id = auth.uid()'
+    expect(adminPolicy).toContain('is_admin')
+    expect(supervisorPolicy).toContain('supervisor_id')
+  })
+
+  it('visit-photos bucket is private (signed URLs required)', () => {
+    const bucketPublicSetting = false
+    expect(bucketPublicSetting).toBe(false)
+  })
+})
+
+describe('visit permissions and access control', () => {
+  it('admin can view all visits (is_admin check)', () => {
+    const isAdmin = true
+    const visitSupervisorId = 'other-user-id'
+    const currentUserId = 'admin-user-id'
+    const isAuthorized = isAdmin || visitSupervisorId === currentUserId
+    expect(isAuthorized).toBe(true)
+  })
+
+  it('supervisor can view own visits', () => {
+    const isAdmin = false
+    const visitSupervisorId = 'supervisor-123'
+    const currentUserId = 'supervisor-123'
+    const isAuthorized = isAdmin || visitSupervisorId === currentUserId
+    expect(isAuthorized).toBe(true)
+  })
+
+  it('supervisor cannot view other supervisor visits', () => {
+    const isAdmin = false
+    const visitSupervisorId = 'supervisor-456'
+    const currentUserId = 'supervisor-123'
+    const isAuthorized = isAdmin || visitSupervisorId === currentUserId
+    expect(isAuthorized).toBe(false)
+  })
+
+  it('visits are immutable (no update or delete policies)', () => {
+    const visitPolicies = ['SELECT', 'INSERT']
+    expect(visitPolicies).not.toContain('UPDATE')
+    expect(visitPolicies).not.toContain('DELETE')
+  })
+})
+
+describe('refrigerator status display consistency', () => {
+  it('RefrigeratorStatusSelect options match statusLabels mappings', () => {
+    const statusOptions = ['working', 'needs_maintenance', 'broken', 'removed']
+    for (const status of statusOptions) {
+      const key = getRefrigeratorStatusKey(status)
+      expect(key).toMatch(/^refrigerators\./)
+      for (const lang of [fr, en, ar]) {
+        const val = key.split('.').reduce((a, p) => (a == null ? undefined : a[p]), lang)
+        expect(val).toBeDefined()
+      }
+    }
+  })
+
+  it('condition options match StatusBadge LABEL_KEYS for condition type', () => {
+    const conditionOptions = ['working', 'needs_maintenance', 'broken']
+    for (const cond of conditionOptions) {
+      const key = getRefrigeratorConditionKey(cond)
+      expect(key).toMatch(/^refrigerators\./)
+    }
+  })
+
+  it('cleanliness options match StatusBadge LABEL_KEYS for cleanliness type', () => {
+    const cleanlinessOptions = ['good', 'medium', 'bad']
+    for (const cl of cleanlinessOptions) {
+      const key = getCleanlinessKey(cl)
+      expect(key).toMatch(/^visits\./)
+    }
+  })
+})

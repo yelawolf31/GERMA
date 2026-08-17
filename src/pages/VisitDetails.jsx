@@ -14,7 +14,7 @@ import PhotoGallery from '../components/visits/PhotoGallery'
 import { useTranslation } from '../i18n'
 import { useAuth } from '../hooks/useAuth'
 import { fetchVisitById } from '../services/visits'
-import { fetchVisitPhotos } from '../services/storage'
+import { fetchVisitPhotos, createSignedUrls } from '../services/storage'
 import { formatDate, formatTime } from '../utils/format'
 import { getRefrigeratorStatusKey } from '../utils/statusLabels'
 
@@ -37,6 +37,7 @@ export default function VisitDetails() {
   const { user, isAdmin } = useAuth()
   const [visit, setVisit] = useState(null)
   const [photos, setPhotos] = useState([])
+  const [signedUrls, setSignedUrls] = useState({})
   const [loading, setLoading] = useState(true)
   const [photosLoading, setPhotosLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -79,7 +80,13 @@ export default function VisitDetails() {
       setPhotosLoading(true)
       try {
         const data = await fetchVisitPhotos(visit.id)
-        if (!cancelled) setPhotos(data)
+        if (!cancelled) {
+          setPhotos(data)
+          if (data.length > 0) {
+            const urlMap = await createSignedUrls(data)
+            if (!cancelled) setSignedUrls(urlMap)
+          }
+        }
       } catch {
         // non-blocking
       } finally {
@@ -265,7 +272,7 @@ export default function VisitDetails() {
         <Card>
           <CardHeader title={t('visits.photos')} />
           <CardBody>
-            <PhotoGallery photos={photos} loading={photosLoading} />
+            <PhotoGallery photos={photos} signedUrls={signedUrls} loading={photosLoading} />
           </CardBody>
         </Card>
 

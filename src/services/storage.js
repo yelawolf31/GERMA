@@ -9,6 +9,8 @@ export const BUCKETS = {
 
 const BUCKET_NAMES = Object.values(BUCKETS)
 
+const SIGNED_URL_EXPIRY = 3600
+
 /**
  * Upload a file to a bucket. Returns the storage path.
  * @param {string} bucket
@@ -33,11 +35,49 @@ export async function uploadFile(bucket, folder, file, onProgress) {
 }
 
 /**
- * Get the public URL for a storage path.
+ * Get the public URL for a storage path (non-visit buckets only).
  */
 export function getPublicUrl(bucket, path) {
   const { data } = supabase.storage.from(bucket).getPublicUrl(path)
   return data?.publicUrl || ''
+}
+
+/**
+ * Create a short-lived signed URL for a private bucket path.
+ * @param {string} bucket
+ * @param {string} path
+ * @param {number} expiry seconds
+ * @returns {Promise<string>} signed URL
+ */
+export async function createSignedUrl(bucket, path, expiry = SIGNED_URL_EXPIRY) {
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiry)
+  if (error) throw new Error(error.message)
+  return data?.signedUrl || ''
+}
+
+/**
+ * Create signed URLs for multiple photos (batch).
+ * @param {Array<{bucket: string, path: string}>} photos
+ * @param {number} expiry seconds
+ * @returns {Promise<Map<string, string>>} path -> signedUrl
+ */
+export async function createSignedUrls(photos, expiry = SIGNED_URL_EXPIRY) {
+  if (!photos.length) return new Map()
+
+  const results = await Promise.allSettled(
+    photos.map(async (photo) => {
+      const url = await createSignedUrl(photo.bucket, photo.path, expiry)
+      return { path: photo.path, url }
+    }),
+  )
+
+  const urlMap = new Map()
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      urlMap.set(result.value.path, result.value.url)
+    }
+  }
+  return urlMap
 }
 
 /**
@@ -51,19 +91,18 @@ export async function removeFile(bucket, path) {
 
 /**
  * Upload one or more images for a visit, save references, return photo records.
+ * Does not store public_url — signed URLs are generated on the fly.
  */
 export async function uploadVisitPhotos(visitId, files) {
   const records = []
   for (const file of files) {
     const path = await uploadFile(BUCKETS.VISIT_PHOTOS, visitId, file)
-    const publicUrl = getPublicUrl(BUCKETS.VISIT_PHOTOS, path)
     const { data, error } = await supabase
       .from('visit_photos')
-      .insert({ visit_id: visitId, bucket: BUCKETS.VISIT_PHOTOS, path, public_url: publicUrl })
+      .insert({ visit_id: visitId, bucket: BUCKETS.VISIT_PHOTOS, path })
       .select()
       .single()
     if (error) {
-      // Roll back the uploaded file if the reference could not be saved
       await removeFile(BUCKETS.VISIT_PHOTOS, path).catch(() => {})
       throw new Error(error.message)
     }

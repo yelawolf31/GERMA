@@ -20,7 +20,7 @@ const CLEANLINESS_OPTIONS = [
   { value: CLEANLINESS_LEVELS.BAD, dot: 'bg-red-500', labelKey: 'visits.bad' },
 ]
 
-function OptionGrid({ options, value, onChange }) {
+function OptionGrid({ options, value, onChange, t }) {
   return (
     <div className="grid grid-cols-3 gap-2">
       {options.map((option) => {
@@ -37,7 +37,7 @@ function OptionGrid({ options, value, onChange }) {
             }`}
           >
             <span className={`h-3 w-3 rounded-full ${option.dot}`} />
-            {option.labelKey}
+            {t(option.labelKey)}
           </button>
         )
       })}
@@ -159,6 +159,7 @@ export default function VisitForm({ onSubmit, onCancel, saving, refrigerators = 
           options={CONDITION_OPTIONS}
           value={form.refrigerator_condition}
           onChange={(value) => setField('refrigerator_condition', value)}
+          t={t}
         />
       </Field>
 
@@ -167,6 +168,7 @@ export default function VisitForm({ onSubmit, onCancel, saving, refrigerators = 
           options={CLEANLINESS_OPTIONS}
           value={form.cleanliness}
           onChange={(value) => setField('cleanliness', value)}
+          t={t}
         />
       </Field>
 

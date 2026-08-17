@@ -1,11 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { X, ChevronLeft, ChevronRight, Download, Image as ImageIcon, AlertCircle } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Download, Image as ImageIcon, AlertCircle, Loader2 } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 
-function PhotoThumbnail({ photo, onClick, alt }) {
+function PhotoThumbnail({ signedUrl, onClick, alt }) {
+  const [loaded, setLoaded] = useState(false)
   const [failed, setFailed] = useState(false)
 
-  if (failed) {
+  if (failed || !signedUrl) {
     return (
       <div className="flex aspect-square items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
         <AlertCircle className="h-6 w-6 text-slate-300" />
@@ -16,35 +17,42 @@ function PhotoThumbnail({ photo, onClick, alt }) {
   return (
     <button
       type="button"
-      onClick={() => onClick(photo)}
+      onClick={() => onClick()}
       className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
     >
+      {!loaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+          <Loader2 className="h-5 w-5 animate-spin text-slate-300" />
+        </div>
+      )}
       <img
-        src={photo.public_url}
+        src={signedUrl}
         alt={alt}
         loading="lazy"
-        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+        className={`h-full w-full object-cover transition-transform group-hover:scale-105 ${loaded ? '' : 'invisible'}`}
+        onLoad={() => setLoaded(true)}
         onError={() => setFailed(true)}
       />
     </button>
   )
 }
 
-function Lightbox({ photo, photos, onClose, onNavigate }) {
+function Lightbox({ signedUrl, photos, onClose, onNavigate }) {
   const [failed, setFailed] = useState(false)
   const overlayRef = useRef(null)
   const { t } = useTranslation()
-  const idx = photos.findIndex((p) => p.id === photo.id)
+  const idx = photos.findIndex((p) => p.id === photos[photos.findIndex((pp) => pp.id === photos[idx]?.id)]?.id)
+  const currentIdx = photos.findIndex((p) => p.id === photos.find((pp) => pp.id === photos[idx]?.id)?.id)
   const hasPrev = idx > 0
   const hasNext = idx < photos.length - 1
 
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowLeft' && hasPrev) onNavigate(photos[idx - 1])
-      if (e.key === 'ArrowRight' && hasNext) onNavigate(photos[idx + 1])
+      if (e.key === 'ArrowLeft' && hasPrev) onNavigate(idx - 1)
+      if (e.key === 'ArrowRight' && hasNext) onNavigate(idx + 1)
     },
-    [onClose, onNavigate, photos, idx, hasPrev, hasNext],
+    [onClose, onNavigate, idx, hasPrev, hasNext],
   )
 
   useEffect(() => {
@@ -58,18 +66,18 @@ function Lightbox({ photo, photos, onClose, onNavigate }) {
 
   const handleDownload = async () => {
     try {
-      const resp = await fetch(photo.public_url)
+      const resp = await fetch(signedUrl)
       const blob = await resp.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = photo.path?.split('/')?.pop() || 'photo.jpg'
+      a.download = photos[idx]?.path?.split('/')?.pop() || 'photo.jpg'
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch {
-      window.open(photo.public_url, '_blank', 'noopener')
+      window.open(signedUrl, '_blank', 'noopener')
     }
   }
 
@@ -92,7 +100,7 @@ function Lightbox({ photo, photos, onClose, onNavigate }) {
 
       {hasPrev && (
         <button
-          onClick={() => onNavigate(photos[idx - 1])}
+          onClick={() => onNavigate(idx - 1)}
           className="absolute left-3 z-10 rounded-full bg-white/20 p-2 text-white hover:bg-white/30"
           aria-label={t('common.previous')}
         >
@@ -102,7 +110,7 @@ function Lightbox({ photo, photos, onClose, onNavigate }) {
 
       {hasNext && (
         <button
-          onClick={() => onNavigate(photos[idx + 1])}
+          onClick={() => onNavigate(idx + 1)}
           className="absolute right-14 z-10 rounded-full bg-white/20 p-2 text-white hover:bg-white/30 sm:right-16"
           aria-label={t('common.next')}
         >
@@ -118,7 +126,7 @@ function Lightbox({ photo, photos, onClose, onNavigate }) {
           </div>
         ) : (
           <img
-            src={photo.public_url}
+            src={signedUrl}
             alt=""
             className="max-h-[85vh] max-w-[90vw] object-contain"
             onError={() => setFailed(true)}
@@ -142,9 +150,9 @@ function Lightbox({ photo, photos, onClose, onNavigate }) {
   )
 }
 
-export default function PhotoGallery({ photos = [], loading = false }) {
+export default function PhotoGallery({ photos = [], signedUrls = {}, loading = false }) {
   const { t } = useTranslation()
-  const [lightboxPhoto, setLightboxPhoto] = useState(null)
+  const [lightboxIndex, setLightboxIndex] = useState(null)
 
   if (loading) {
     return (
@@ -168,22 +176,22 @@ export default function PhotoGallery({ photos = [], loading = false }) {
   return (
     <>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-        {photos.map((photo) => (
+        {photos.map((photo, i) => (
           <PhotoThumbnail
             key={photo.id}
-            photo={photo}
-            onClick={setLightboxPhoto}
+            signedUrl={signedUrls[photo.path]}
+            onClick={() => setLightboxIndex(i)}
             alt={`${t('visits.photo')} ${photo.path?.split('/')?.pop() || ''}`}
           />
         ))}
       </div>
 
-      {lightboxPhoto && (
+      {lightboxIndex !== null && (
         <Lightbox
-          photo={lightboxPhoto}
+          signedUrl={signedUrls[photos[lightboxIndex]?.path]}
           photos={photos}
-          onClose={() => setLightboxPhoto(null)}
-          onNavigate={setLightboxPhoto}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
         />
       )}
     </>
