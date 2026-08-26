@@ -352,6 +352,20 @@ describe('i18n translations', () => {
     }
   })
 
+  it('all languages have warnings keys', () => {
+    const warningKeys = [
+      'title', 'count', 'countSingular', 'issue', 'reason',
+      'reasonPlaceholder', 'issuedBy', 'issuedAt', 'dismiss', 'dismissed',
+      'dismissedBy', 'dismissedAt', 'saved', 'dismissedMsg', 'deleteFailed',
+      'banner', 'noWarnings', 'confirmDismiss', 'visitWarning', 'visitWarningReason',
+    ]
+    for (const key of warningKeys) {
+      expect(fr.warnings[key]).toBeDefined()
+      expect(en.warnings[key]).toBeDefined()
+      expect(ar.warnings[key]).toBeDefined()
+    }
+  })
+
   it('all languages have common.yes and common.no', () => {
     expect(fr.common.yes).toBeDefined()
     expect(fr.common.no).toBeDefined()

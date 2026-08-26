@@ -4,16 +4,23 @@ import { ArrowLeft, CheckCircle2 } from 'lucide-react'
 import Card from '../components/ui/Card'
 import Spinner from '../components/ui/Spinner'
 import ErrorState from '../components/ui/ErrorState'
+import Button from '../components/ui/Button'
+import Modal from '../components/ui/Modal'
+import { Field, Textarea } from '../components/ui/Field'
 import VisitForm from '../components/visits/VisitForm'
+import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../i18n'
 import { useToast } from '../hooks/useToast'
 import { supabase } from '../lib/supabase'
 import { uploadVisitPhotos } from '../services/storage'
+import { createWarning } from '../services/warnings'
+import { required } from '../utils/validators'
 
 export default function RecordVisit() {
   const { customerId } = useParams()
   const { t } = useTranslation()
   const { toast } = useToast()
+  const { profile } = useAuth()
   const navigate = useNavigate()
 
   const [customer, setCustomer] = useState(null)
@@ -22,6 +29,12 @@ export default function RecordVisit() {
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const busyRef = useRef(false)
+
+  const [savedVisitId, setSavedVisitId] = useState(null)
+  const [warningOpen, setWarningOpen] = useState(false)
+  const [warningReason, setWarningReason] = useState('')
+  const [warningReasonError, setWarningReasonError] = useState('')
+  const [warningSaving, setWarningSaving] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -81,13 +94,40 @@ export default function RecordVisit() {
 
       if (payload.locationWarning) toast.info(t('visits.locationFailed'))
       toast.success(t('visits.saved'))
-      navigate(`/customers/${customerId}`)
+      setSavedVisitId(visit.id)
+      setWarningOpen(true)
     } catch (err) {
       toast.error(t('visits.saveFailed'))
       console.error('Visit save failed:', err)
     } finally {
       busyRef.current = false
       setSaving(false)
+    }
+  }
+
+  const handleSkipWarning = () => {
+    navigate(`/customers/${customerId}`)
+  }
+
+  const handleSaveWarning = async () => {
+    if (!required(warningReason)) {
+      setWarningReasonError(t('common.required'))
+      return
+    }
+    setWarningSaving(true)
+    try {
+      await createWarning({
+        customer_id: customerId,
+        visit_id: savedVisitId,
+        reason: warningReason,
+        issued_by: profile.id,
+      })
+      toast.success(t('warnings.saved'))
+      navigate(`/customers/${customerId}`)
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setWarningSaving(false)
     }
   }
 
@@ -142,6 +182,29 @@ export default function RecordVisit() {
           {t('visits.uploading')}
         </div>
       )}
+
+      <Modal open={warningOpen} onClose={handleSkipWarning} title={t('warnings.visitWarning')}>
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">{t('warnings.visitWarningReason')}</p>
+          <Field label={t('warnings.reason')} required error={warningReasonError}>
+            <Textarea
+              rows={3}
+              value={warningReason}
+              onChange={(e) => { setWarningReason(e.target.value); setWarningReasonError('') }}
+              error={warningReasonError}
+              placeholder={t('warnings.reasonPlaceholder')}
+            />
+          </Field>
+          <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+            <Button variant="secondary" onClick={handleSkipWarning} disabled={warningSaving}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleSaveWarning} loading={warningSaving} disabled={warningSaving}>
+              {t('common.save')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

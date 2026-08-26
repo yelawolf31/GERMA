@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Refrigerator as RefrigeratorIcon,
   AlertTriangle,
+  ShieldAlert,
 } from 'lucide-react'
 import Card, { CardBody, CardHeader } from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -19,9 +20,13 @@ import ErrorState from '../components/ui/ErrorState'
 import Badge from '../components/ui/Badge'
 import StatusBadge from '../components/ui/StatusBadge'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Modal from '../components/ui/Modal'
 import MapView from '../components/map/MapView'
 import RefrigeratorStatusSelect from '../components/refrigerators/RefrigeratorStatusSelect'
+import WarningCard from '../components/warnings/WarningCard'
+import WarningForm from '../components/warnings/WarningForm'
 import { useAuth } from '../hooks/useAuth'
+import { useWarnings } from '../hooks/useWarnings'
 import { useTranslation } from '../i18n'
 import { supabase } from '../lib/supabase'
 import { getCustomerMarkerStatus, getMarkerColor } from '../utils/markerStatus'
@@ -40,15 +45,18 @@ function InfoRow({ label, value }) {
 export default function CustomerDetails() {
   const { id } = useParams()
   const { t } = useTranslation()
-  const { isAdmin } = useAuth()
+  const { isAdmin, profile } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { warnings, activeCount, refresh: refreshWarnings, addWarning, dismiss } = useWarnings(id)
 
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [warningFormOpen, setWarningFormOpen] = useState(false)
+  const [confirmDismissId, setConfirmDismissId] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -95,6 +103,27 @@ export default function CustomerDetails() {
     } catch (err) {
       toast.error(err.message)
       setDeleting(false)
+    }
+  }
+
+  const handleIssueWarning = async ({ reason, visit_id }) => {
+    try {
+      await addWarning({ customer_id: id, visit_id, reason, issued_by: profile.id })
+      toast.success(t('warnings.saved'))
+      setWarningFormOpen(false)
+      refreshWarnings()
+    } catch (err) {
+      toast.error(err.message)
+    }
+  }
+
+  const handleDismissWarning = async (warningId) => {
+    try {
+      await dismiss(warningId, profile.id)
+      toast.success(t('warnings.dismissedMsg'))
+      setConfirmDismissId(null)
+    } catch (err) {
+      toast.error(t('warnings.deleteFailed'))
     }
   }
 
@@ -170,6 +199,10 @@ export default function CustomerDetails() {
             <AlertTriangle className="h-4 w-4" />
             {t('issues.add')}
           </Button>
+          <Button variant="secondary" size="sm" onClick={() => setWarningFormOpen(true)}>
+            <ShieldAlert className="h-4 w-4" />
+            {t('warnings.issue')}
+          </Button>
           {isAdmin && (
             <>
               <Button variant="secondary" size="sm" onClick={() => navigate(`/customers/edit/${customer.id}`)}>
@@ -184,6 +217,15 @@ export default function CustomerDetails() {
           )}
         </div>
       </div>
+
+      {activeCount >= 3 && (
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-300 bg-red-100 px-4 py-3">
+          <ShieldAlert className="h-5 w-5 shrink-0 text-red-600" />
+          <p className="text-sm font-medium text-red-800">
+            {t('warnings.banner').replace('{count}', activeCount)}
+          </p>
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-1">
@@ -293,6 +335,29 @@ export default function CustomerDetails() {
           </Card>
 
           <Card>
+            <CardHeader
+              title={t('warnings.title')}
+              subtitle={activeCount > 0 ? (activeCount === 1 ? t('warnings.countSingular') : t('warnings.count').replace('{count}', activeCount)) : t('warnings.noWarnings')}
+            />
+            {warnings.length === 0 ? (
+              <CardBody>
+                <EmptyState title={t('warnings.noWarnings')} />
+              </CardBody>
+            ) : (
+              <div className="divide-y divide-slate-100 px-5 py-3">
+                {warnings.map((warning) => (
+                  <div key={warning.id} className="py-2 first:pt-0 last:pb-0">
+                    <WarningCard
+                      warning={warning}
+                      onDismiss={isAdmin ? (wid) => setConfirmDismissId(wid) : null}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          <Card>
             <CardHeader title={t('customers.visitHistory')} subtitle={`${visits.length} ${t('nav.visits')}`} />
             {visits.length === 0 ? (
               <CardBody>
@@ -350,6 +415,23 @@ export default function CustomerDetails() {
         onCancel={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
         loading={deleting}
+      />
+
+      <Modal open={warningFormOpen} onClose={() => setWarningFormOpen(false)} title={t('warnings.issue')}>
+        <WarningForm
+          visits={visits}
+          onSubmit={handleIssueWarning}
+          onCancel={() => setWarningFormOpen(false)}
+        />
+      </Modal>
+
+      <ConfirmDialog
+        open={!!confirmDismissId}
+        title={t('warnings.confirmDismiss')}
+        message={t('warnings.confirmDismiss')}
+        confirmLabel={t('warnings.dismiss')}
+        onCancel={() => setConfirmDismissId(null)}
+        onConfirm={() => handleDismissWarning(confirmDismissId)}
       />
     </div>
   )
