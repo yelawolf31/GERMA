@@ -343,6 +343,14 @@ export const ar = {
     field_commune: 'البلدية',
     field_customerId: 'الزبون',
     field_role: 'الدور',
+    field_visitedAt: 'تاريخ الزيارة',
+    field_refrigeratorCondition: 'حالة الثلاجة',
+    field_installationDate: 'تاريخ التركيب',
+    field_issueType: 'نوع المشكلة',
+    field_address: 'العنوان',
+    field_businessType: 'نوع النشاط',
+    field_isActive: 'نشط',
+    field_fullName: 'الاسم الكامل',
   },
 
   settings: {
@@ -396,6 +404,8 @@ export const ar = {
     offlineBanner: 'غير متصل — بعض الإجراءات تتطلب اتصالاً بالإنترنت.',
     reset: 'إعادة تعيين',
     clear: 'مسح',
+    yes: 'نعم',
+    no: 'لا',
   },
 }
 

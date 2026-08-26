@@ -334,12 +334,29 @@ describe('i18n translations', () => {
       'field_commune',
       'field_customerId',
       'field_role',
+      'field_visitedAt',
+      'field_refrigeratorCondition',
+      'field_installationDate',
+      'field_issueType',
+      'field_address',
+      'field_businessType',
+      'field_isActive',
+      'field_fullName',
     ]
     for (const key of diffKeys) {
       expect(fr.audit[key]).toBeDefined()
       expect(en.audit[key]).toBeDefined()
       expect(ar.audit[key]).toBeDefined()
     }
+  })
+
+  it('all languages have common.yes and common.no', () => {
+    expect(fr.common.yes).toBeDefined()
+    expect(fr.common.no).toBeDefined()
+    expect(en.common.yes).toBeDefined()
+    expect(en.common.no).toBeDefined()
+    expect(ar.common.yes).toBeDefined()
+    expect(ar.common.no).toBeDefined()
   })
 
   it('all languages have businessType section', () => {

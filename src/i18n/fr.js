@@ -343,6 +343,14 @@ export const fr = {
     field_commune: 'Commune',
     field_customerId: 'Client',
     field_role: 'Rôle',
+    field_visitedAt: 'Date de visite',
+    field_refrigeratorCondition: 'État du réfrigérateur',
+    field_installationDate: 'Date d\'installation',
+    field_issueType: 'Type de problème',
+    field_address: 'Adresse',
+    field_businessType: 'Type de commerce',
+    field_isActive: 'Actif',
+    field_fullName: 'Nom complet',
   },
 
   settings: {
@@ -396,6 +404,8 @@ export const fr = {
     offlineBanner: 'Hors ligne — certaines actions nécessitent une connexion.',
     reset: 'Réinitialiser',
     clear: 'Effacer',
+    yes: 'Oui',
+    no: 'Non',
   },
 }
 

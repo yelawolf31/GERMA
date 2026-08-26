@@ -343,6 +343,14 @@ export const en = {
     field_commune: 'Commune',
     field_customerId: 'Customer',
     field_role: 'Role',
+    field_visitedAt: 'Visit date',
+    field_refrigeratorCondition: 'Refrigerator condition',
+    field_installationDate: 'Installation date',
+    field_issueType: 'Issue type',
+    field_address: 'Address',
+    field_businessType: 'Business type',
+    field_isActive: 'Active',
+    field_fullName: 'Full name',
   },
 
   settings: {
@@ -396,6 +404,8 @@ export const en = {
     offlineBanner: 'Offline — some actions require a connection.',
     reset: 'Reset',
     clear: 'Clear',
+    yes: 'Yes',
+    no: 'No',
   },
 }
 
