@@ -342,6 +342,8 @@ describe('i18n translations', () => {
       'field_businessType',
       'field_isActive',
       'field_fullName',
+      'field_reportedBy',
+      'field_supervisor',
     ]
     for (const key of diffKeys) {
       expect(fr.audit[key]).toBeDefined()

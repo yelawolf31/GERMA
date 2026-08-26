@@ -351,6 +351,8 @@ export const fr = {
     field_businessType: 'Type de commerce',
     field_isActive: 'Actif',
     field_fullName: 'Nom complet',
+    field_reportedBy: 'Signalé par',
+    field_supervisor: 'Superviseur',
   },
 
   settings: {

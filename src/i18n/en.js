@@ -351,6 +351,8 @@ export const en = {
     field_businessType: 'Business type',
     field_isActive: 'Active',
     field_fullName: 'Full name',
+    field_reportedBy: 'Reported by',
+    field_supervisor: 'Supervisor',
   },
 
   settings: {

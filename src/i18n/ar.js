@@ -351,6 +351,8 @@ export const ar = {
     field_businessType: 'نوع النشاط',
     field_isActive: 'نشط',
     field_fullName: 'الاسم الكامل',
+    field_reportedBy: 'أبلغ عنه',
+    field_supervisor: 'المشرف',
   },
 
   settings: {

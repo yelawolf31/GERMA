@@ -9,6 +9,9 @@ import Badge from '../components/ui/Badge'
 import { useTranslation } from '../i18n'
 import { useDebounce } from '../hooks/useDebounce'
 import { fetchAuditLogs } from '../services/audit'
+import { fetchCustomers } from '../services/customers'
+import { fetchRefrigerators } from '../services/refrigerators'
+import { supabase } from '../lib/supabase'
 import { formatDateTime, formatDate } from '../utils/format'
 
 const ACTION_TONE = {
@@ -69,7 +72,8 @@ const FIELD_LABELS = {
   installation_date: 'audit.field_installationDate', issue_type: 'audit.field_issueType',
   address: 'audit.field_address', business_type: 'audit.field_businessType',
   is_active: 'audit.field_isActive', full_name: 'audit.field_fullName',
-  refrigerator_id: 'audit.field_refrigeratorId',
+  refrigerator_id: 'audit.field_refrigeratorId', supervisor_id: 'audit.field_supervisor',
+  reported_by: 'audit.field_reportedBy',
 }
 
 const PAGE_SIZE = 15
@@ -85,14 +89,23 @@ function shortUuid(val) {
   return val.length > 8 ? val.slice(0, 8) : val
 }
 
-function formatFieldValue(fieldKey, value, t) {
+function formatFieldValue(fieldKey, value, t, maps) {
   if (value === null || value === undefined || value === '') return '—'
   if (fieldKey === 'is_active') return value ? t('common.yes') : t('common.no')
   if (fieldKey === 'installation_date' || fieldKey === 'visited_at') {
     const formatted = fieldKey === 'visited_at' ? formatDateTime(value) : formatDate(value)
     return formatted || value
   }
-  if (fieldKey === 'customer_id' || fieldKey === 'supervisor_id' || fieldKey === 'refrigerator_id' || fieldKey === 'visit_id' || fieldKey === 'issue_id') {
+  if (fieldKey === 'customer_id') {
+    return maps?.customersMap?.get(value) || shortUuid(value)
+  }
+  if (fieldKey === 'supervisor_id' || fieldKey === 'reported_by') {
+    return maps?.profilesMap?.get(value) || shortUuid(value)
+  }
+  if (fieldKey === 'refrigerator_id') {
+    return maps?.refrigeratorsMap?.get(value) || shortUuid(value)
+  }
+  if (fieldKey === 'visit_id' || fieldKey === 'issue_id') {
     return shortUuid(value)
   }
   const enumGroup = ENUM_MAP[fieldKey]
@@ -101,7 +114,7 @@ function formatFieldValue(fieldKey, value, t) {
   return String(value)
 }
 
-function DiffView({ oldData, newData, entityType, t }) {
+function DiffView({ oldData, newData, entityType, t, maps }) {
   const oldParsed = parseJson(oldData)
   const newParsed = parseJson(newData)
 
@@ -134,9 +147,9 @@ function DiffView({ oldData, newData, entityType, t }) {
           return (
             <div key={key} className="flex items-baseline gap-2 text-sm">
               <span className="shrink-0 font-medium text-slate-500">{label}:</span>
-              <span className="text-red-500/70 line-through">{formatFieldValue(key, oldVal, t)}</span>
+              <span className="text-red-500/70 line-through">{formatFieldValue(key, oldVal, t, maps)}</span>
               <span className="text-slate-400">→</span>
-              <span className="font-medium text-emerald-600">{formatFieldValue(key, newVal, t)}</span>
+              <span className="font-medium text-emerald-600">{formatFieldValue(key, newVal, t, maps)}</span>
             </div>
           )
         })}
@@ -155,7 +168,7 @@ function DiffView({ oldData, newData, entityType, t }) {
           return (
             <div key={key} className="flex items-baseline gap-2 text-sm">
               <span className="shrink-0 font-medium text-slate-500">{label}:</span>
-              <span className="text-slate-700">{formatFieldValue(key, data[key], t)}</span>
+              <span className="text-slate-700">{formatFieldValue(key, data[key], t, maps)}</span>
             </div>
           )
         })}
@@ -166,12 +179,16 @@ function DiffView({ oldData, newData, entityType, t }) {
   return null
 }
 
-function extractEntityName(log) {
+function extractEntityName(log, maps) {
   const data = parseJson(log.new_data) || parseJson(log.old_data)
   if (data && typeof data === 'object') {
     if (data.name) return data.name
     if (data.email) return data.email
     if (data.serial_number) return data.serial_number
+  }
+  if (data?.customer_id && maps?.customersMap) {
+    const name = maps.customersMap.get(data.customer_id)
+    if (name) return name
   }
   return null
 }
@@ -190,6 +207,26 @@ export default function AuditLogs() {
   const [filterDateTo, setFilterDateTo] = useState('')
   const [filterSearchInput, setFilterSearchInput] = useState('')
   const filterSearch = useDebounce(filterSearchInput, 300)
+
+  const [customersMap, setCustomersMap] = useState(new Map())
+  const [refrigeratorsMap, setRefrigeratorsMap] = useState(new Map())
+  const [profilesMap, setProfilesMap] = useState(new Map())
+
+  useEffect(() => {
+    fetchCustomers().then((list) => {
+      setCustomersMap(new Map(list.map((c) => [c.id, c.name])))
+    }).catch(() => {})
+    fetchRefrigerators().then((list) => {
+      setRefrigeratorsMap(new Map(list.map((r) => [r.id, r.serial_number || r.model || shortUuid(r.id)])))
+    }).catch(() => {})
+    if (supabase) {
+      supabase.from('profiles').select('id, full_name').then(({ data }) => {
+        setProfilesMap(new Map((data || []).map((p) => [p.id, p.full_name || '—'])))
+      }).catch(() => {})
+    }
+  }, [])
+
+  const maps = useMemo(() => ({ customersMap, refrigeratorsMap, profilesMap }), [customersMap, refrigeratorsMap, profilesMap])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -291,7 +328,7 @@ export default function AuditLogs() {
           logs.map((log) => {
             const isExpanded = expandedId === log.id
             const hasJson = log.old_data || log.new_data
-            const entityName = extractEntityName(log)
+            const entityName = extractEntityName(log, maps)
             return (
               <Card key={log.id}>
                 <div className="px-4 py-3.5">
@@ -321,7 +358,7 @@ export default function AuditLogs() {
                 </div>
                 {isExpanded && hasJson && (
                   <div className="border-t border-slate-100 px-4 py-3">
-                    <DiffView oldData={log.old_data} newData={log.new_data} entityType={log.entity_type} t={t} />
+                    <DiffView oldData={log.old_data} newData={log.new_data} entityType={log.entity_type} t={t} maps={maps} />
                   </div>
                 )}
               </Card>
