@@ -106,8 +106,6 @@ export default function MapView({
     }
 
     map.on('load', () => {
-      if (geolocate) geolocate.trigger().catch(() => {})
-
       // Customer source with clustering
       map.addSource('customers', {
         type: 'geojson',
@@ -168,6 +166,14 @@ export default function MapView({
       })
 
       setLoaded(true)
+
+      // Auto-trigger geolocation AFTER layers are set up.
+      // Defer so any error from trigger() cannot block map rendering.
+      if (geolocate) {
+        setTimeout(() => {
+          try { geolocate.trigger().catch(() => {}) } catch {}
+        }, 200)
+      }
     })
 
     // Click on cluster → zoom in
