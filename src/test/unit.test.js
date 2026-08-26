@@ -314,6 +314,34 @@ describe('i18n translations', () => {
     }
   })
 
+  it('all languages have audit diff keys (viewDetails, field labels)', () => {
+    const diffKeys = [
+      'viewDetails',
+      'hideDetails',
+      'changedFrom',
+      'field_status',
+      'field_name',
+      'field_phone',
+      'field_email',
+      'field_description',
+      'field_priority',
+      'field_cleanliness',
+      'field_condition',
+      'field_model',
+      'field_serialNumber',
+      'field_notes',
+      'field_wilaya',
+      'field_commune',
+      'field_customerId',
+      'field_role',
+    ]
+    for (const key of diffKeys) {
+      expect(fr.audit[key]).toBeDefined()
+      expect(en.audit[key]).toBeDefined()
+      expect(ar.audit[key]).toBeDefined()
+    }
+  })
+
   it('all languages have businessType section', () => {
     expect(fr.businessType.superette).toBeDefined()
     expect(en.businessType.superette).toBeDefined()
