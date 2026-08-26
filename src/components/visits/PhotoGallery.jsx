@@ -37,12 +37,11 @@ function PhotoThumbnail({ signedUrl, onClick, alt }) {
   )
 }
 
-function Lightbox({ signedUrl, photos, onClose, onNavigate }) {
+function Lightbox({ index, signedUrl, photos, onClose, onNavigate }) {
   const [failed, setFailed] = useState(false)
   const overlayRef = useRef(null)
   const { t } = useTranslation()
-  const idx = photos.findIndex((p) => p.id === photos[photos.findIndex((pp) => pp.id === photos[idx]?.id)]?.id)
-  const currentIdx = photos.findIndex((p) => p.id === photos.find((pp) => pp.id === photos[idx]?.id)?.id)
+  const idx = index ?? 0
   const hasPrev = idx > 0
   const hasNext = idx < photos.length - 1
 
@@ -188,6 +187,7 @@ export default function PhotoGallery({ photos = [], signedUrls = {}, loading = f
 
       {lightboxIndex !== null && (
         <Lightbox
+          index={lightboxIndex}
           signedUrl={signedUrls[photos[lightboxIndex]?.path]}
           photos={photos}
           onClose={() => setLightboxIndex(null)}
