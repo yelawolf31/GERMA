@@ -92,16 +92,22 @@ export default function MapView({
       setMapError(e.error?.message || 'Map failed to load')
     })
 
+    let geolocate = null
     if (showUserLocation) {
-      const geolocate = new mapboxgl.GeolocateControl({
+      geolocate = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true, timeout: 10000 },
         trackUserLocation: true,
         showUserHeading: true,
       })
       map.addControl(geolocate, 'top-right')
+      geolocate.on('error', (err) => {
+        console.warn('Geolocation unavailable:', err?.message)
+      })
     }
 
     map.on('load', () => {
+      if (geolocate) geolocate.trigger().catch(() => {})
+
       // Customer source with clustering
       map.addSource('customers', {
         type: 'geojson',
