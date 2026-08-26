@@ -84,7 +84,7 @@ export default function VisitDetails() {
           setPhotos(data)
           if (data.length > 0) {
             const urlMap = await createSignedUrls(data)
-            if (!cancelled) setSignedUrls(urlMap)
+            if (!cancelled) setSignedUrls(Object.fromEntries(urlMap))
           }
         }
       } catch {
