@@ -166,7 +166,7 @@ export default function CustomerDetails() {
               {t('map.directions')}
             </Button>
           )}
-          <Button variant="secondary" size="sm" onClick={() => navigate(`/issues/add?customer=${customer.id}`)}>
+          <Button variant="secondary" size="sm" onClick={() => navigate(`/issues?customer=${customer.id}`)}>
             <AlertTriangle className="h-4 w-4" />
             {t('issues.add')}
           </Button>
