@@ -138,6 +138,7 @@ export const ar = {
     noResults: 'لا توجد ثلاجات.',
     searchPlaceholder: 'بحث (رقم تسلسلي، طراز...)',
     serialInvalid: 'رقم تسلسلي غير صالح.',
+    delete: 'حذف',
   },
 
   visits: {
@@ -254,6 +255,7 @@ export const ar = {
     refrigerators: 'الثلاجات',
     lastVisit: 'آخر زيارة',
     noCustomers: 'لا يوجد زبائن لعرضهم.',
+    noResults: 'لا توجد نتائج.',
     loading: 'جاري تحميل الخريطة...',
     coordinates: 'الإحداثيات',
   },
@@ -298,6 +300,18 @@ export const ar = {
     createdAt: 'التاريخ',
     noResults: 'لا توجد سجلات.',
     clearNote: 'لا يمكن حذف سجل التدقيق.',
+    action_CREATE: 'إنشاء',
+    action_UPDATE: 'تعديل',
+    action_DELETE: 'حذف',
+    action_photo_upload: 'تم رفع صورة',
+    action_photo_delete: 'تم حذف صورة',
+    entity_customer: 'زبون',
+    entity_refrigerator: 'ثلاجة',
+    entity_visit: 'زيارة',
+    entity_issue: 'مشكلة',
+    entity_visit_photo: 'صورة زيارة',
+    entity_user: 'مستخدم',
+    entity_profile: 'ملف شخصي',
   },
 
   settings: {
@@ -338,6 +352,7 @@ export const ar = {
     requiredField: 'حقل مطلوب',
     submit: 'إرسال',
     invalidEmail: 'بريد إلكتروني غير صالح.',
+    invalidPhone: 'رقم هاتف غير صالح.',
     unknown: 'غير معروف',
     itemsPerPage: 'لكل صفحة',
     next: 'التالي',

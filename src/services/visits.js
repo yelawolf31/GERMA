@@ -82,20 +82,6 @@ export async function createVisit(payload) {
   return data
 }
 
-/**
- * Fetch visits for the dashboard (grouped counts).
- */
-export async function fetchVisitStats() {
-  const start = new Date()
-  start.setHours(0, 0, 0, 0)
-  const { data, error } = await supabase
-    .from('visits')
-    .select('id, supervisor_id, visited_at')
-    .gte('visited_at', start.toISOString())
-  if (error) throw new Error(error.message)
-  return data || []
-}
-
 const VISIT_DETAIL_SELECT = `
   *,
   customer:customers(id, name, phone, address, wilaya, commune, latitude, longitude),

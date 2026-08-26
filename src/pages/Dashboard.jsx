@@ -316,7 +316,7 @@ export default function Dashboard() {
         <div>
           <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">{t('dashboard.title')}</h1>
           <p className="text-sm text-slate-500">
-            {isAdmin ? t('users.admin') : t('users.supervisor')} — Germa
+            {isAdmin ? t('users.admin') : t('users.supervisor')} — {t('app.name')}
           </p>
         </div>
         {role === ROLES.SUPERVISOR && (

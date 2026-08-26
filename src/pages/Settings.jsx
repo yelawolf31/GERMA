@@ -77,7 +77,7 @@ export default function Settings() {
           <CardHeader title={t('settings.about')} />
           <CardBody className="flex items-center justify-between">
             <p className="text-sm text-slate-600">
-              Germa Field Management — {t('settings.version')} 1.0.0
+              {t('app.name')} — {t('settings.version')} 1.0.0
             </p>
             <Button variant="danger" onClick={handleLogout}>
               <LogOut className="h-4 w-4" />

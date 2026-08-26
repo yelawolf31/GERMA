@@ -16,7 +16,7 @@ import { useAuth } from '../hooks/useAuth'
 import { fetchVisitById } from '../services/visits'
 import { fetchVisitPhotos, createSignedUrls } from '../services/storage'
 import { formatDate, formatTime } from '../utils/format'
-import { getRefrigeratorStatusKey } from '../utils/statusLabels'
+
 
 function InfoRow({ label, value, icon: Icon }) {
   return (

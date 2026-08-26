@@ -76,8 +76,12 @@ export default function AuditLogs() {
             <Card key={log.id}>
               <div className="px-4 py-3.5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={ACTION_TONE[log.action] || 'gray'}>{log.action}</Badge>
-                  <span className="text-sm font-medium text-slate-800">{entityLabel(log.entity_type)}</span>
+                  <Badge tone={ACTION_TONE[log.action] || 'gray'}>
+                    {t(`audit.action_${log.action}`) || log.action}
+                  </Badge>
+                  <span className="text-sm font-medium text-slate-800">
+                    {t(`audit.entity_${log.entity_type}`) || entityLabel(log.entity_type)}
+                  </span>
                   {log.entity_id && (
                     <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-[11px] text-slate-600" dir="ltr">
                       {log.entity_id}

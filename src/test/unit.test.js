@@ -216,7 +216,7 @@ describe('validateIssue', () => {
   })
 
   it('passes with all required fields', () => {
-    const result = validateIssue({ issue_type: 'cooling_problem', priority: 'high', description: 'Broken' }, t)
+    const result = validateIssue({ customer_id: '123', issue_type: 'cooling_problem', priority: 'high', description: 'Broken' }, t)
     expect(result.valid).toBe(true)
   })
 })

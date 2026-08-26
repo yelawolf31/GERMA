@@ -31,16 +31,33 @@ function longMonth(locale, monthIndex) {
   }
 }
 
+const TZ = 'Africa/Algiers'
+
+function tzDateParts(value) {
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(date)
+  const get = (type) => Number(parts.find((p) => p.type === type)?.value)
+  return { year: get('year'), month: get('month'), day: get('day'), hour: get('hour'), minute: get('minute'), second: get('second') }
+}
+
 /**
  * Format an ISO date to dd/mm/yyyy.
  */
 export function formatDate(value) {
   if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  return `${day}/${month}/${date.getFullYear()}`
+  const p = tzDateParts(value)
+  if (!p) return '—'
+  return `${String(p.day).padStart(2, '0')}/${String(p.month).padStart(2, '0')}/${p.year}`
 }
 
 /**
@@ -48,11 +65,9 @@ export function formatDate(value) {
  */
 export function formatDateTime(value) {
   if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  return `${formatDate(value)} ${String(date.getHours()).padStart(2, '0')}:${String(
-    date.getMinutes(),
-  ).padStart(2, '0')}`
+  const p = tzDateParts(value)
+  if (!p) return '—'
+  return `${formatDate(value)} ${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`
 }
 
 /**
@@ -60,9 +75,9 @@ export function formatDateTime(value) {
  */
 export function formatTime(value) {
   if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  const p = tzDateParts(value)
+  if (!p) return '—'
+  return `${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`
 }
 
 /**
@@ -122,31 +137,47 @@ export function formatWeekday(value) {
 }
 
 /**
- * Today at 00:00:00 local.
+ * Today at 00:00:00 Africa/Algiers.
  */
 export function startOfToday() {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return d
+  const now = new Date()
+  const p = tzDateParts(now)
+  if (!p) {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d
+  }
+  return new Date(`${p.year}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}T00:00:00+01:00`)
 }
 
 /**
- * Days ago at 00:00:00 local.
+ * Days ago at 00:00:00 Africa/Algiers.
  */
 export function startOfDaysAgo(days) {
-  const d = new Date()
+  const now = new Date()
+  const p = tzDateParts(now)
+  if (!p) {
+    const d = new Date()
+    d.setDate(d.getDate() - days)
+    d.setHours(0, 0, 0, 0)
+    return d
+  }
+  const d = new Date(`${p.year}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}T00:00:00+01:00`)
   d.setDate(d.getDate() - days)
-  d.setHours(0, 0, 0, 0)
   return d
 }
 
 /**
- * Is an ISO date today (local)?
+ * Is an ISO date today (Africa/Algiers)?
  */
 export function isToday(value) {
   if (!value) return false
-  const date = new Date(value)
-  return date.toDateString() === new Date().toDateString()
+  const now = new Date()
+  const target = new Date(value)
+  const np = tzDateParts(now)
+  const tp = tzDateParts(target)
+  if (!np || !tp) return false
+  return np.year === tp.year && np.month === tp.month && np.day === tp.day
 }
 
 /**

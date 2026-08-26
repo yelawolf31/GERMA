@@ -138,6 +138,7 @@ export const fr = {
     noResults: 'Aucun réfrigérateur trouvé.',
     searchPlaceholder: 'Rechercher (série, modèle...)',
     serialInvalid: 'Numéro de série invalide.',
+    delete: 'Supprimer',
   },
 
   visits: {
@@ -254,6 +255,7 @@ export const fr = {
     refrigerators: 'Réfrigérateurs',
     lastVisit: 'Dernière visite',
     noCustomers: 'Aucun client à afficher.',
+    noResults: 'Aucun résultat.',
     loading: 'Chargement de la carte...',
     coordinates: 'Coordonnées',
   },
@@ -298,6 +300,18 @@ export const fr = {
     createdAt: 'Date',
     noResults: 'Aucune entrée.',
     clearNote: 'Le journal d\'audit ne peut pas être supprimé.',
+    action_CREATE: 'Création',
+    action_UPDATE: 'Modification',
+    action_DELETE: 'Suppression',
+    action_photo_upload: 'Photo ajoutée',
+    action_photo_delete: 'Photo supprimée',
+    entity_customer: 'Client',
+    entity_refrigerator: 'Réfrigérateur',
+    entity_visit: 'Visite',
+    entity_issue: 'Problème',
+    entity_visit_photo: 'Photo de visite',
+    entity_user: 'Utilisateur',
+    entity_profile: 'Profil',
   },
 
   settings: {
@@ -338,6 +352,7 @@ export const fr = {
     requiredField: 'Champ requis',
     submit: 'Envoyer',
     invalidEmail: 'Adresse e-mail invalide.',
+    invalidPhone: 'Numéro de téléphone invalide.',
     unknown: 'Inconnu',
     itemsPerPage: 'Par page',
     next: 'Suivant',

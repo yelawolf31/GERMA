@@ -138,6 +138,7 @@ export const en = {
     noResults: 'No refrigerators found.',
     searchPlaceholder: 'Search (serial, model...)',
     serialInvalid: 'Invalid serial number.',
+    delete: 'Delete',
   },
 
   visits: {
@@ -254,6 +255,7 @@ export const en = {
     refrigerators: 'Refrigerators',
     lastVisit: 'Last visit',
     noCustomers: 'No customers to display.',
+    noResults: 'No results.',
     loading: 'Loading map...',
     coordinates: 'Coordinates',
   },
@@ -298,6 +300,18 @@ export const en = {
     createdAt: 'Date',
     noResults: 'No entries.',
     clearNote: 'The audit log cannot be deleted.',
+    action_CREATE: 'Created',
+    action_UPDATE: 'Updated',
+    action_DELETE: 'Deleted',
+    action_photo_upload: 'Photo uploaded',
+    action_photo_delete: 'Photo deleted',
+    entity_customer: 'Customer',
+    entity_refrigerator: 'Refrigerator',
+    entity_visit: 'Visit',
+    entity_issue: 'Issue',
+    entity_visit_photo: 'Visit photo',
+    entity_user: 'User',
+    entity_profile: 'Profile',
   },
 
   settings: {
@@ -338,6 +352,7 @@ export const en = {
     requiredField: 'Required field',
     submit: 'Submit',
     invalidEmail: 'Invalid email address.',
+    invalidPhone: 'Invalid phone number.',
     unknown: 'Unknown',
     itemsPerPage: 'Per page',
     next: 'Next',

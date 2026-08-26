@@ -49,7 +49,7 @@ export default function Users() {
     const errors = {}
     if (!required(form.email)) errors.email = t('common.required')
     else if (!isEmail(form.email)) errors.email = t('common.invalidEmail')
-    if (!required(form.password) || form.password.length < 6) errors.password = t('common.required')
+    if (!required(form.password) || form.password.length < 8) errors.password = t('common.required')
     if (!required(form.full_name)) errors.full_name = t('common.required')
     if (!required(form.role)) errors.role = t('common.required')
     setFormErrors(errors)

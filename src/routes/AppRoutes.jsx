@@ -5,6 +5,7 @@ import Login from '../pages/Login'
 import DashboardLayout from '../layouts/DashboardLayout'
 import { ProtectedRoute, RoleRoute } from './guards'
 import { ROLES } from '../constants/roles'
+import { useTranslation } from '../i18n'
 
 const Dashboard = lazy(() => import('../pages/Dashboard'))
 const MapPage = lazy(() => import('../pages/MapPage'))
@@ -25,9 +26,10 @@ const AuditLogs = lazy(() => import('../pages/AuditLogs'))
 const NotFound = lazy(() => import('../pages/NotFound'))
 
 function PageLoader() {
+  const { t } = useTranslation()
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <Spinner label="Loading..." />
+      <Spinner label={t('common.loading')} />
     </div>
   )
 }
@@ -52,11 +54,9 @@ export default function AppRoutes() {
           <Route path="/map" element={withSuspense(MapPage)} />
           <Route path="/customers" element={withSuspense(Customers)} />
           <Route path="/customers/add" element={withSuspense(AddCustomer)} />
-          <Route path="/customers/edit/:id" element={withSuspense(AddCustomer)} />
           <Route path="/customers/:id" element={withSuspense(CustomerDetails)} />
           <Route path="/refrigerators" element={withSuspense(Refrigerators)} />
           <Route path="/refrigerators/add" element={withSuspense(AddRefrigerator)} />
-          <Route path="/refrigerators/edit/:id" element={withSuspense(AddRefrigerator)} />
           <Route path="/refrigerators/:id" element={withSuspense(RefrigeratorDetails)} />
           <Route path="/visits" element={withSuspense(Visits)} />
           <Route path="/visits/:visitId" element={withSuspense(VisitDetails)} />
@@ -68,6 +68,8 @@ export default function AppRoutes() {
           <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
             <Route path="/users" element={withSuspense(Users)} />
             <Route path="/audit-logs" element={withSuspense(AuditLogs)} />
+            <Route path="/customers/edit/:id" element={withSuspense(AddCustomer)} />
+            <Route path="/refrigerators/edit/:id" element={withSuspense(AddRefrigerator)} />
           </Route>
         </Route>
       </Route>

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { fetchVisits, createVisit, fetchVisitStats } from '../services/visits'
-import { startOfToday } from '../utils/format'
+import { fetchVisits, createVisit } from '../services/visits'
 
 export function useVisits() {
   const [visits, setVisits] = useState([])
@@ -34,17 +33,5 @@ export function useVisits() {
     return fetchVisits(filters)
   }, [])
 
-  const loadTodayStats = useCallback(async () => {
-    return fetchVisitStats()
-  }, [])
-
-  return { visits, loading, error, refresh, addVisit, queryVisits, loadTodayStats }
-}
-
-/**
- * Count visits since start of today.
- */
-export function countTodayVisits(visits) {
-  const start = startOfToday()
-  return visits.filter((visit) => new Date(visit.visited_at) >= start).length
+  return { visits, loading, error, refresh, addVisit, queryVisits }
 }

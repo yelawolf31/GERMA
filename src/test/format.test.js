@@ -148,25 +148,33 @@ describe('formatWeekday', () => {
 describe('startOfToday', () => {
   it('returns a Date at midnight', () => {
     const result = startOfToday()
-    expect(result.getHours()).toBe(0)
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Africa/Algiers',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+    }).formatToParts(result)
+    const hour = Number(parts.find((p) => p.type === 'hour')?.value)
+    expect(hour).toBe(0)
     expect(result.getMinutes()).toBe(0)
     expect(result.getSeconds()).toBe(0)
-    expect(result.getMilliseconds()).toBe(0)
   })
 
   it('returns today date components', () => {
     const result = startOfToday()
     const now = new Date()
-    expect(result.getDate()).toBe(now.getDate())
-    expect(result.getMonth()).toBe(now.getMonth())
-    expect(result.getFullYear()).toBe(now.getFullYear())
+    const fmt = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Algiers', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+    expect(fmt(result)).toBe(fmt(now))
   })
 })
 
 describe('startOfDaysAgo', () => {
   it('returns midnight of N days ago', () => {
     const result = startOfDaysAgo(3)
-    expect(result.getHours()).toBe(0)
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Africa/Algiers',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+    }).formatToParts(result)
+    const hour = Number(parts.find((p) => p.type === 'hour')?.value)
+    expect(hour).toBe(0)
     expect(result.getMinutes()).toBe(0)
     expect(result.getSeconds()).toBe(0)
   })

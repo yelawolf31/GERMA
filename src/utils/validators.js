@@ -9,6 +9,12 @@ export function isEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
+export function isPhone(value) {
+  if (!value) return true
+  const cleaned = String(value).replace(/[\s\-().]/g, '')
+  return /^\+?\d{8,15}$/.test(cleaned)
+}
+
 export function isLatitude(value) {
   const num = Number(value)
   return !Number.isNaN(num) && num >= VALID_LATITUDE_RANGE.min && num <= VALID_LATITUDE_RANGE.max
@@ -32,6 +38,7 @@ export function validateCustomer(form, t) {
   if (!required(form.name)) errors.name = t('common.required')
   if (!required(form.wilaya)) errors.wilaya = t('common.required')
   if (!required(form.commune)) errors.commune = t('common.required')
+  if (form.phone && !isPhone(form.phone)) errors.phone = t('common.invalidPhone')
   if (form.latitude != null && form.latitude !== '' && !isLatitude(form.latitude)) {
     errors.latitude = t('common.required')
   }
@@ -70,6 +77,7 @@ export function validateVisit(form, t) {
  */
 export function validateIssue(form, t) {
   const errors = {}
+  if (!required(form.customer_id)) errors.customer_id = t('common.required')
   if (!required(form.issue_type)) errors.issue_type = t('common.required')
   if (!required(form.priority)) errors.priority = t('common.required')
   if (!required(form.description)) errors.description = t('common.required')
