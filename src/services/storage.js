@@ -156,3 +156,82 @@ export async function deleteVisitPhoto(photoId, path) {
   if (error) throw new Error(error.message)
   return true
 }
+
+export async function deleteIssuePhoto(photoId, path) {
+  await removeFile(BUCKETS.ISSUE_PHOTOS, path)
+  const { error } = await supabase.from('issue_photos').delete().eq('id', photoId)
+  if (error) throw new Error(error.message)
+  return true
+}
+
+export async function uploadCustomerPhotos(customerId, files) {
+  const records = []
+  for (const file of files) {
+    const path = await uploadFile(BUCKETS.CUSTOMER_PHOTOS, customerId, file)
+    const publicUrl = getPublicUrl(BUCKETS.CUSTOMER_PHOTOS, path)
+    const { data, error } = await supabase
+      .from('customer_photos')
+      .insert({ customer_id: customerId, bucket: BUCKETS.CUSTOMER_PHOTOS, path, public_url: publicUrl })
+      .select()
+      .single()
+    if (error) {
+      await removeFile(BUCKETS.CUSTOMER_PHOTOS, path).catch(() => {})
+      throw new Error(error.message)
+    }
+    records.push(data)
+  }
+  return records
+}
+
+export async function fetchCustomerPhotos(customerId) {
+  const { data, error } = await supabase
+    .from('customer_photos')
+    .select('*')
+    .eq('customer_id', customerId)
+    .order('created_at')
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+export async function deleteCustomerPhoto(photoId, path) {
+  await removeFile(BUCKETS.CUSTOMER_PHOTOS, path)
+  const { error } = await supabase.from('customer_photos').delete().eq('id', photoId)
+  if (error) throw new Error(error.message)
+  return true
+}
+
+export async function uploadRefrigeratorPhotos(refrigeratorId, files) {
+  const records = []
+  for (const file of files) {
+    const path = await uploadFile(BUCKETS.REFRIGERATOR_PHOTOS, refrigeratorId, file)
+    const publicUrl = getPublicUrl(BUCKETS.REFRIGERATOR_PHOTOS, path)
+    const { data, error } = await supabase
+      .from('refrigerator_photos')
+      .insert({ refrigerator_id: refrigeratorId, bucket: BUCKETS.REFRIGERATOR_PHOTOS, path, public_url: publicUrl })
+      .select()
+      .single()
+    if (error) {
+      await removeFile(BUCKETS.REFRIGERATOR_PHOTOS, path).catch(() => {})
+      throw new Error(error.message)
+    }
+    records.push(data)
+  }
+  return records
+}
+
+export async function fetchRefrigeratorPhotos(refrigeratorId) {
+  const { data, error } = await supabase
+    .from('refrigerator_photos')
+    .select('*')
+    .eq('refrigerator_id', refrigeratorId)
+    .order('created_at')
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+export async function deleteRefrigeratorPhoto(photoId, path) {
+  await removeFile(BUCKETS.REFRIGERATOR_PHOTOS, path)
+  const { error } = await supabase.from('refrigerator_photos').delete().eq('id', photoId)
+  if (error) throw new Error(error.message)
+  return true
+}

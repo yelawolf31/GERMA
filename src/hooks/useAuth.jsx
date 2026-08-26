@@ -47,10 +47,13 @@ export function AuthProvider({ children }) {
       setInitialized(true)
     })
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (!mounted) return
       setSession(newSession)
       if (newSession?.user) loadProfile(newSession.user)
+      if (event === 'SIGNED_IN' && newSession?.user) {
+        supabase.rpc('log_auth_event', { action: 'LOGIN' }).catch(() => {})
+      }
     })
 
     return () => {
@@ -67,6 +70,7 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     if (!supabase) return
+    await supabase.rpc('log_auth_event', { action: 'LOGOUT' }).catch(() => {})
     await supabase.auth.signOut()
     setProfile(null)
   }, [])

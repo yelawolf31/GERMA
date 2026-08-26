@@ -291,6 +291,29 @@ describe('i18n translations', () => {
     expect(ar.audit.title).toBeDefined()
   })
 
+  it('all languages have new audit keys (auth, product, photos, filters, login/logout)', () => {
+    const newAuditKeys = [
+      'entity_issue_photo',
+      'entity_customer_photo',
+      'entity_refrigerator_photo',
+      'entity_auth',
+      'entity_product',
+      'action_LOGIN',
+      'action_LOGOUT',
+      'filterEntity',
+      'filterAction',
+      'filterDateFrom',
+      'filterDateTo',
+      'filterUser',
+      'totalResults',
+    ]
+    for (const key of newAuditKeys) {
+      expect(fr.audit[key]).toBeDefined()
+      expect(en.audit[key]).toBeDefined()
+      expect(ar.audit[key]).toBeDefined()
+    }
+  })
+
   it('all languages have businessType section', () => {
     expect(fr.businessType.superette).toBeDefined()
     expect(en.businessType.superette).toBeDefined()
@@ -635,6 +658,16 @@ describe('photo security model', () => {
     const storage = await import('../services/storage')
     expect(typeof storage.fetchVisitPhotos).toBe('function')
     expect(typeof storage.deleteVisitPhoto).toBe('function')
+  })
+
+  it('storage module exports customer and refrigerator photo functions', async () => {
+    const storage = await import('../services/storage')
+    expect(typeof storage.uploadCustomerPhotos).toBe('function')
+    expect(typeof storage.fetchCustomerPhotos).toBe('function')
+    expect(typeof storage.deleteCustomerPhoto).toBe('function')
+    expect(typeof storage.uploadRefrigeratorPhotos).toBe('function')
+    expect(typeof storage.fetchRefrigeratorPhotos).toBe('function')
+    expect(typeof storage.deleteRefrigeratorPhoto).toBe('function')
   })
 
   it('visit photos RLS allows admin all and supervisor own visits', () => {
