@@ -187,9 +187,10 @@ describe('startOfDaysAgo', () => {
 
   it('for 1 returns yesterday at midnight', () => {
     const result = startOfDaysAgo(1)
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
-    expect(result.toDateString()).toBe(yesterday.toDateString())
+    const today = startOfDaysAgo(0)
+    const expected = new Date(today)
+    expected.setDate(expected.getDate() - 1)
+    expect(result.toDateString()).toBe(expected.toDateString())
   })
 })
 

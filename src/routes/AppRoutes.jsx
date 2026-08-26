@@ -22,6 +22,7 @@ const Issues = lazy(() => import('../pages/Issues'))
 const Reports = lazy(() => import('../pages/Reports'))
 const Settings = lazy(() => import('../pages/Settings'))
 const Users = lazy(() => import('../pages/Users'))
+const UserDetails = lazy(() => import('../pages/UserDetails'))
 const AuditLogs = lazy(() => import('../pages/AuditLogs'))
 const NotFound = lazy(() => import('../pages/NotFound'))
 
@@ -67,6 +68,7 @@ export default function AppRoutes() {
 
           <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
             <Route path="/users" element={withSuspense(Users)} />
+            <Route path="/users/:id" element={withSuspense(UserDetails)} />
             <Route path="/audit-logs" element={withSuspense(AuditLogs)} />
             <Route path="/customers/edit/:id" element={withSuspense(AddCustomer)} />
             <Route path="/refrigerators/edit/:id" element={withSuspense(AddRefrigerator)} />
