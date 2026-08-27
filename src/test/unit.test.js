@@ -29,6 +29,7 @@ import {
   applyCustomerFilters,
   createDefaultMapFilters,
 } from '../utils/filters'
+import { sortRows } from '../utils/sort'
 
 const t = (key) => key
 
@@ -589,6 +590,69 @@ describe('visit detail i18n completeness', () => {
       expect(lang.visits.viewCustomer).toBeDefined()
       expect(lang.visits.viewRefrigerator).toBeDefined()
     }
+  })
+
+  it('all languages have dashboard table keys', () => {
+    const keys = [
+      'customersOverview',
+      'refrigeratorsStatus',
+      'noCustomers',
+      'noRefrigerators',
+      'date',
+      'tableCustomer',
+      'tableSupervisor',
+      'tableCondition',
+      'tableCleanliness',
+      'tableIssueType',
+      'tablePriority',
+      'tableStatus',
+      'tableActivity',
+    ]
+    for (const lang of [fr, en, ar]) {
+      for (const key of keys) {
+        expect(lang.dashboard[key]).toBeDefined()
+      }
+    }
+  })
+})
+
+describe('sortRows', () => {
+  const rows = [
+    { name: 'Épicerie', visits: 3, visitedAt: '2026-08-01T10:00:00Z' },
+    { name: 'Superette', visits: 9, visitedAt: '2026-08-03T10:00:00Z' },
+    { name: 'Café', visits: 5, visitedAt: '2026-08-02T10:00:00Z' },
+  ]
+
+  it('sorts strings ascending with locale compare', () => {
+    const sorted = sortRows(rows, 'name', 'asc')
+    expect(sorted.map((r) => r.name)).toEqual(['Café', 'Épicerie', 'Superette'])
+  })
+
+  it('sorts strings descending', () => {
+    const sorted = sortRows(rows, 'name', 'desc')
+    expect(sorted.map((r) => r.name)).toEqual(['Superette', 'Épicerie', 'Café'])
+  })
+
+  it('sorts numbers ascending', () => {
+    const sorted = sortRows(rows, 'visits', 'asc')
+    expect(sorted.map((r) => r.visits)).toEqual([3, 5, 9])
+  })
+
+  it('sorts ISO date strings ascending', () => {
+    const sorted = sortRows(rows, 'visitedAt', 'asc')
+    expect(sorted.map((r) => r.name)).toEqual(['Épicerie', 'Café', 'Superette'])
+  })
+
+  it('pushes null values to the end on ascending', () => {
+    const withNull = [...rows, { name: 'Null', visits: null, visitedAt: null }]
+    const sorted = sortRows(withNull, 'visitedAt', 'asc')
+    expect(sorted[sorted.length - 1].name).toBe('Null')
+  })
+
+  it('does not mutate the input array', () => {
+    const copy = [...rows]
+    sortRows(rows, 'name', 'asc')
+    expect(rows).toEqual(copy)
   })
 })
 

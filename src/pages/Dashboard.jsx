@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Store,
   Refrigerator,
@@ -13,6 +13,7 @@ import {
   LocateFixed,
 } from 'lucide-react'
 import Card, { CardBody, CardHeader } from '../components/ui/Card'
+import DataTable from '../components/ui/DataTable'
 import Button from '../components/ui/Button'
 import Spinner from '../components/ui/Spinner'
 import EmptyState from '../components/ui/EmptyState'
@@ -51,8 +52,33 @@ function StatCard({ icon: Icon, label, value, tone = 'brand' }) {
   )
 }
 
+function NameCell({ primary, secondary }) {
+  return (
+    <div className="min-w-0">
+      <p className="truncate font-medium text-slate-800">{primary}</p>
+      {secondary && <p className="truncate text-xs text-slate-500">{secondary}</p>}
+    </div>
+  )
+}
+
+function DateCell({ value, showTime = false }) {
+  if (!value) return <span className="text-slate-400">—</span>
+  return (
+    <span className="whitespace-nowrap text-xs text-slate-500" dir="ltr">
+      {formatDate(value)}
+      {showTime && ` ${formatTime(value)}`}
+    </span>
+  )
+}
+
+function CountCell({ value, danger }) {
+  if (!value) return <span className="text-slate-400">{value}</span>
+  return <span className={`font-semibold ${danger ? 'text-red-600' : 'text-slate-700'}`}>{value}</span>
+}
+
 function AdminDashboard({ customers, visits, issues }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const stats = useMemo(() => {
     const allRefrigerators = customers.flatMap((c) => c.refrigerators)
@@ -67,8 +93,219 @@ function AdminDashboard({ customers, visits, issues }) {
     }
   }, [customers, visits, issues])
 
-  const recentVisits = visits.slice(0, 6)
-  const recentIssues = issues.slice(0, 6)
+  const visitRows = useMemo(
+    () =>
+      visits.map((v) => ({
+        id: v.id,
+        customerName: v.customer?.name || '—',
+        location: [v.customer?.commune, v.customer?.wilaya].filter(Boolean).join(', '),
+        supervisor: v.supervisor?.full_name || '—',
+        condition: v.refrigerator_condition,
+        cleanliness: v.cleanliness,
+        visitedAt: v.visited_at,
+      })),
+    [visits],
+  )
+
+  const issueRows = useMemo(
+    () =>
+      issues.map((i) => ({
+        id: i.id,
+        customerId: i.customer_id,
+        customerName: i.customer?.name || '—',
+        issueType: i.issue_type,
+        priority: i.priority,
+        status: i.status,
+        createdAt: i.created_at,
+      })),
+    [issues],
+  )
+
+  const customerRows = useMemo(
+    () =>
+      customers.map((c) => ({
+        id: c.id,
+        name: c.name,
+        location: [c.commune, c.wilaya].filter(Boolean).join(' · '),
+        businessType: c.business_type,
+        refrigerators: c.refrigerators.length,
+        lastVisitAt: c.lastVisitAt,
+        openIssues: c.openIssueCount || 0,
+        status: c.status,
+      })),
+    [customers],
+  )
+
+  const refrigeratorRows = useMemo(
+    () =>
+      customers.flatMap((c) =>
+        c.refrigerators.map((r) => ({
+          id: r.id,
+          serialNumber: r.serial_number,
+          model: r.model,
+          customerName: c.name,
+          status: r.status,
+        })),
+      ),
+    [customers],
+  )
+
+  const visitColumns = useMemo(
+    () => [
+      {
+        key: 'customerName',
+        label: t('dashboard.tableCustomer'),
+        sortable: true,
+        render: (value, row) => <NameCell primary={value} secondary={row.location} />,
+      },
+      {
+        key: 'supervisor',
+        label: t('dashboard.tableSupervisor'),
+        sortable: true,
+        render: (value) => <span className="text-slate-600">{value}</span>,
+      },
+      {
+        key: 'condition',
+        label: t('dashboard.tableCondition'),
+        align: 'center',
+        render: (value) => <StatusBadge type="condition" value={value} />,
+      },
+      {
+        key: 'cleanliness',
+        label: t('dashboard.tableCleanliness'),
+        align: 'center',
+        render: (value) => <StatusBadge type="cleanliness" value={value} />,
+      },
+      {
+        key: 'visitedAt',
+        label: t('dashboard.date'),
+        sortable: true,
+        align: 'right',
+        render: (value) => <DateCell value={value} />,
+      },
+    ],
+    [t],
+  )
+
+  const issueColumns = useMemo(
+    () => [
+      {
+        key: 'customerName',
+        label: t('dashboard.tableCustomer'),
+        sortable: true,
+        render: (value) => <NameCell primary={value} />,
+      },
+      {
+        key: 'issueType',
+        label: t('dashboard.tableIssueType'),
+        sortable: true,
+        render: (value) => <span className="text-slate-600">{t(`issues.${value}`)}</span>,
+      },
+      {
+        key: 'priority',
+        label: t('dashboard.tablePriority'),
+        align: 'center',
+        render: (value) => <StatusBadge type="priority" value={value} />,
+      },
+      {
+        key: 'status',
+        label: t('dashboard.tableStatus'),
+        align: 'center',
+        render: (value) => <StatusBadge type="issueStatus" value={value} />,
+      },
+      {
+        key: 'createdAt',
+        label: t('dashboard.date'),
+        sortable: true,
+        align: 'right',
+        render: (value) => <DateCell value={value} />,
+      },
+    ],
+    [t],
+  )
+
+  const customerColumns = useMemo(
+    () => [
+      {
+        key: 'name',
+        label: t('dashboard.tableCustomer'),
+        sortable: true,
+        render: (value, row) => <NameCell primary={value} secondary={row.location} />,
+      },
+      {
+        key: 'businessType',
+        label: t('dashboard.tableActivity'),
+        sortable: true,
+        render: (value) => (value ? <span className="text-slate-600">{t(`businessType.${value}`)}</span> : '—'),
+      },
+      {
+        key: 'refrigerators',
+        label: t('customers.refrigerators'),
+        sortable: true,
+        align: 'center',
+        render: (value) => <CountCell value={value} />,
+      },
+      {
+        key: 'lastVisitAt',
+        label: t('customers.lastVisit'),
+        sortable: true,
+        align: 'right',
+        render: (value) => {
+          if (!value) return <span className="text-slate-400">—</span>
+          const stale = new Date(value) < startOfDaysAgo(7)
+          return (
+            <span className={`whitespace-nowrap text-xs ${stale ? 'font-medium text-red-600' : 'text-slate-500'}`} dir="ltr">
+              {formatDate(value)}
+            </span>
+          )
+        },
+      },
+      {
+        key: 'openIssues',
+        label: t('dashboard.openIssues'),
+        sortable: true,
+        align: 'center',
+        render: (value) => <CountCell value={value} danger={value > 0} />,
+      },
+      {
+        key: 'status',
+        label: t('dashboard.tableStatus'),
+        align: 'center',
+        render: (value) => <StatusBadge type="customer" value={value} />,
+      },
+    ],
+    [t],
+  )
+
+  const refrigeratorColumns = useMemo(
+    () => [
+      {
+        key: 'serialNumber',
+        label: t('refrigerators.serialNumber'),
+        sortable: true,
+        render: (value) => <span className="font-medium text-slate-800" dir="ltr">{value}</span>,
+      },
+      {
+        key: 'model',
+        label: t('refrigerators.model'),
+        sortable: true,
+        render: (value) => <span className="text-slate-600">{value || '—'}</span>,
+      },
+      {
+        key: 'customerName',
+        label: t('dashboard.tableCustomer'),
+        sortable: true,
+        render: (value) => <NameCell primary={value} />,
+      },
+      {
+        key: 'status',
+        label: t('dashboard.tableStatus'),
+        align: 'center',
+        render: (value) => <StatusBadge type="refrigerator" value={value} />,
+      },
+    ],
+    [t],
+  )
 
   return (
     <div className="space-y-6">
@@ -92,31 +329,14 @@ function AdminDashboard({ customers, visits, issues }) {
               </Link>
             }
           />
-          {recentVisits.length === 0 ? (
-            <CardBody>
-              <EmptyState title={t('dashboard.noVisits')} />
-            </CardBody>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {recentVisits.map((visit) => (
-                <div key={visit.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-800">
-                      {visit.customer?.name || '—'}
-                    </p>
-                    <p className="text-xs text-slate-500">{visit.supervisor?.full_name || '—'}</p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    <StatusBadge type="condition" value={visit.refrigerator_condition} />
-                    <StatusBadge type="cleanliness" value={visit.cleanliness} />
-                  </div>
-                  <span className="shrink-0 text-xs text-slate-400" dir="ltr">
-                    {formatDate(visit.visited_at)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+          <DataTable
+            columns={visitColumns}
+            rows={visitRows.slice(0, 8)}
+            getRowKey={(row) => row.id}
+            onRowClick={(row) => navigate(`/visits/${row.id}`)}
+            emptyState={<EmptyState title={t('dashboard.noVisits')} />}
+            initialSort="visitedAt"
+          />
         </Card>
 
         <Card>
@@ -128,28 +348,56 @@ function AdminDashboard({ customers, visits, issues }) {
               </Link>
             }
           />
-          {recentIssues.length === 0 ? (
-            <CardBody>
-              <EmptyState title={t('dashboard.noIssues')} />
-            </CardBody>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {recentIssues.map((issue) => (
-                <div key={issue.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-800">
-                      {issue.customer?.name || '—'}
-                    </p>
-                    <p className="text-xs text-slate-500">{t(`issues.${issue.issue_type}`)}</p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    <StatusBadge type="priority" value={issue.priority} />
-                    <StatusBadge type="issueStatus" value={issue.status} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <DataTable
+            columns={issueColumns}
+            rows={issueRows.slice(0, 8)}
+            getRowKey={(row) => row.id}
+            onRowClick={(row) => navigate(`/customers/${row.customerId}`)}
+            emptyState={<EmptyState title={t('dashboard.noIssues')} />}
+            initialSort="createdAt"
+          />
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader
+            title={t('dashboard.customersOverview')}
+            action={
+              <Link to="/customers" className="text-xs font-medium text-brand-700 hover:underline">
+                {t('dashboard.seeAll')}
+              </Link>
+            }
+          />
+          <DataTable
+            columns={customerColumns}
+            rows={customerRows.slice(0, 8)}
+            getRowKey={(row) => row.id}
+            onRowClick={(row) => navigate(`/customers/${row.id}`)}
+            emptyState={<EmptyState title={t('dashboard.noCustomers')} />}
+            initialSort="name"
+            initialDir="asc"
+          />
+        </Card>
+
+        <Card>
+          <CardHeader
+            title={t('dashboard.refrigeratorsStatus')}
+            action={
+              <Link to="/refrigerators" className="text-xs font-medium text-brand-700 hover:underline">
+                {t('dashboard.seeAll')}
+              </Link>
+            }
+          />
+          <DataTable
+            columns={refrigeratorColumns}
+            rows={refrigeratorRows.slice(0, 8)}
+            getRowKey={(row) => row.id}
+            onRowClick={(row) => navigate(`/refrigerators/${row.id}`)}
+            emptyState={<EmptyState title={t('dashboard.noRefrigerators')} />}
+            initialSort="serialNumber"
+            initialDir="asc"
+          />
         </Card>
       </div>
     </div>
@@ -196,6 +444,7 @@ function NearMeList({ customers, position }) {
 
 function SupervisorDashboard({ customers, visits, issues }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { position, loading: locating, getCurrentPosition } = useGeolocation()
 
   const todayVisits = visits.filter((v) => isToday(v.visited_at))
@@ -205,6 +454,50 @@ function SupervisorDashboard({ customers, visits, issues }) {
     if (!c.lastVisitAt) return true
     return new Date(c.lastVisitAt) < startOfDaysAgo(7)
   })
+
+  const visitRows = useMemo(
+    () =>
+      visits.map((v) => ({
+        id: v.id,
+        customerName: v.customer?.name || '—',
+        supervisor: v.supervisor?.full_name || '—',
+        condition: v.refrigerator_condition,
+        cleanliness: v.cleanliness,
+        visitedAt: v.visited_at,
+      })),
+    [visits],
+  )
+
+  const visitColumns = useMemo(
+    () => [
+      {
+        key: 'customerName',
+        label: t('dashboard.tableCustomer'),
+        sortable: true,
+        render: (value) => <NameCell primary={value} />,
+      },
+      {
+        key: 'condition',
+        label: t('dashboard.tableCondition'),
+        align: 'center',
+        render: (value) => <StatusBadge type="condition" value={value} />,
+      },
+      {
+        key: 'cleanliness',
+        label: t('dashboard.tableCleanliness'),
+        align: 'center',
+        render: (value) => <StatusBadge type="cleanliness" value={value} />,
+      },
+      {
+        key: 'visitedAt',
+        label: t('dashboard.date'),
+        sortable: true,
+        align: 'right',
+        render: (value) => <DateCell value={value} showTime />,
+      },
+    ],
+    [t],
+  )
 
   return (
     <div className="space-y-6">
@@ -228,58 +521,44 @@ function SupervisorDashboard({ customers, visits, issues }) {
         <NearMeList customers={customers} position={position} />
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader title={t('dashboard.recentVisits')} />
-          {visits.slice(0, 6).length === 0 ? (
-            <CardBody>
-              <EmptyState title={t('dashboard.noVisits')} />
-            </CardBody>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {visits.slice(0, 6).map((visit) => (
-                <div key={visit.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-800">{visit.customer?.name || '—'}</p>
-                    <p className="text-xs text-slate-500" dir="ltr">
-                      {formatDate(visit.visited_at)} {formatTime(visit.visited_at)}
-                    </p>
-                  </div>
-                  <StatusBadge type="condition" value={visit.refrigerator_condition} />
-                  <StatusBadge type="cleanliness" value={visit.cleanliness} />
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
+      <Card>
+        <CardHeader title={t('dashboard.recentVisits')} />
+        <DataTable
+          columns={visitColumns}
+          rows={visitRows.slice(0, 8)}
+          getRowKey={(row) => row.id}
+          onRowClick={(row) => navigate(`/visits/${row.id}`)}
+          emptyState={<EmptyState title={t('dashboard.noVisits')} />}
+          initialSort="visitedAt"
+        />
+      </Card>
 
-        <Card>
-          <CardHeader title={t('dashboard.notVisitedRecently')} />
-          {notVisitedRecently.slice(0, 6).length === 0 ? (
-            <CardBody>
-              <EmptyState title={t('dashboard.noVisits')} />
-            </CardBody>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {notVisitedRecently.slice(0, 6).map((customer) => (
-                <div key={customer.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-800">{customer.name}</p>
-                    <p className="text-xs text-slate-500">
-                      {t('customers.lastVisit')} : {formatDate(customer.lastVisitAt)}
-                    </p>
-                  </div>
-                  <Link to={`/map?customer=${customer.id}`}>
-                    <Button variant="secondary" size="sm">
-                      <Navigation className="h-4 w-4" />
-                    </Button>
-                  </Link>
+      <Card>
+        <CardHeader title={t('dashboard.notVisitedRecently')} />
+        {notVisitedRecently.slice(0, 6).length === 0 ? (
+          <CardBody>
+            <EmptyState title={t('dashboard.noVisits')} />
+          </CardBody>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {notVisitedRecently.slice(0, 6).map((customer) => (
+              <div key={customer.id} className="flex items-center gap-3 px-5 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-800">{customer.name}</p>
+                  <p className="text-xs text-slate-500">
+                    {t('customers.lastVisit')} : {formatDate(customer.lastVisitAt)}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </div>
+                <Link to={`/map?customer=${customer.id}`}>
+                  <Button variant="secondary" size="sm">
+                    <Navigation className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   )
 }
