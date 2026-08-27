@@ -74,6 +74,9 @@ export const en = {
     recentWarnings: 'Recent warnings',
     clientsWithWarnings: 'Customers with active warnings',
     clientsAtRisk: 'Customers at risk (3+)',
+    criticalIssues: 'Critical open issues',
+    needsAttention: 'Needs attention',
+    needsAttentionClear: 'All good.',
   },
 
   businessType: {
@@ -210,6 +213,7 @@ export const en = {
     photoLoadError: 'Unable to load photo',
     downloadPhoto: 'Download',
     photo: 'Photo',
+    reportIssue: 'Report an issue for this refrigerator',
   },
 
   issues: {
@@ -441,6 +445,7 @@ export const en = {
     delete: 'Delete',
     edit: 'Edit',
     add: 'Add',
+    export: 'Export',
     search: 'Search',
     loading: 'Loading...',
     noData: 'No data.',
@@ -470,6 +475,13 @@ export const en = {
     clear: 'Clear',
     yes: 'Yes',
     no: 'No',
+  },
+
+  search: {
+    placeholder: 'Search customers (name, phone) or refrigerators...',
+    customers: 'Customers',
+    refrigerators: 'Refrigerators',
+    noResults: 'No results.',
   },
 }
 

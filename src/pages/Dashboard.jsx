@@ -19,6 +19,7 @@ import Button from '../components/ui/Button'
 import Spinner from '../components/ui/Spinner'
 import EmptyState from '../components/ui/EmptyState'
 import StatusBadge from '../components/ui/StatusBadge'
+import NeedsAttentionStrip from '../components/dashboard/NeedsAttentionStrip'
 import { useAuth } from '../hooks/useAuth'
 import { useMapData } from '../hooks/useMapData'
 import { useVisits } from '../hooks/useVisits'
@@ -408,6 +409,45 @@ function AdminDashboard({ customers, visits, issues, warnings }) {
         <StatCard icon={ClipboardList} label={t('dashboard.todayVisits')} value={stats.todayVisits} tone="green" />
       </div>
 
+      <NeedsAttentionStrip
+        title={t('dashboard.needsAttention')}
+        clearLabel={t('dashboard.needsAttentionClear')}
+        items={[
+          {
+            key: 'broken',
+            icon: XCircle,
+            label: t('dashboard.broken'),
+            count: stats.broken,
+            to: '/refrigerators',
+            tone: 'red',
+          },
+          {
+            key: 'criticalIssues',
+            icon: AlertTriangle,
+            label: t('dashboard.criticalIssues'),
+            count: issues.filter((i) => i.priority === 'critical' && (i.status === 'open' || i.status === 'in_progress')).length,
+            to: '/issues',
+            tone: 'red',
+          },
+          {
+            key: 'atRisk',
+            icon: ShieldAlert,
+            label: t('dashboard.clientsAtRisk'),
+            count: atRiskCustomers.length,
+            to: '/customers',
+            tone: 'amber',
+          },
+          {
+            key: 'notVisited',
+            icon: Store,
+            label: t('dashboard.notVisitedRecently'),
+            count: customers.filter((c) => !c.lastVisitAt || new Date(c.lastVisitAt) < startOfDaysAgo(7)).length,
+            to: '/customers',
+            tone: 'amber',
+          },
+        ]}
+      />
+
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader
@@ -602,6 +642,8 @@ function SupervisorDashboard({ customers, visits, issues, warnings }) {
         .sort((a, b) => (warningCounts[b.id] || 0) - (warningCounts[a.id] || 0)),
     [customers, warningCounts],
   )
+  const atRiskCustomers = customers.filter((c) => (warningCounts[c.id] || 0) >= 3)
+  const criticalIssues = issues.filter((i) => i.priority === 'critical' && (i.status === 'open' || i.status === 'in_progress'))
 
   const visitRows = useMemo(
     () =>
@@ -659,6 +701,45 @@ function SupervisorDashboard({ customers, visits, issues, warnings }) {
         <StatCard icon={ShieldAlert} label={t('dashboard.activeWarnings')} value={activeWarningCount} tone="red" />
         <StatCard icon={Store} label={t('dashboard.notVisitedRecently')} value={notVisitedRecently.length} tone="sky" />
       </div>
+
+      <NeedsAttentionStrip
+        title={t('dashboard.needsAttention')}
+        clearLabel={t('dashboard.needsAttentionClear')}
+        items={[
+          {
+            key: 'broken',
+            icon: XCircle,
+            label: t('dashboard.broken'),
+            count: brokenRefrigerators.length,
+            to: '/refrigerators',
+            tone: 'red',
+          },
+          {
+            key: 'criticalIssues',
+            icon: AlertTriangle,
+            label: t('dashboard.criticalIssues'),
+            count: criticalIssues.length,
+            to: '/issues',
+            tone: 'red',
+          },
+          {
+            key: 'atRisk',
+            icon: ShieldAlert,
+            label: t('dashboard.clientsAtRisk'),
+            count: atRiskCustomers.length,
+            to: '/customers',
+            tone: 'amber',
+          },
+          {
+            key: 'notVisited',
+            icon: Store,
+            label: t('dashboard.notVisitedRecently'),
+            count: notVisitedRecently.length,
+            to: '/customers',
+            tone: 'amber',
+          },
+        ]}
+      />
 
       <Card>
         <CardHeader

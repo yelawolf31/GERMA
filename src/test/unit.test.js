@@ -31,6 +31,7 @@ import {
 } from '../utils/filters'
 import { sortRows } from '../utils/sort'
 import { countWarningsByCustomer } from '../utils/warningsStats'
+import { toCsv } from '../utils/export'
 
 const t = (key) => key
 
@@ -691,6 +692,56 @@ describe('sortRows', () => {
     const copy = [...rows]
     sortRows(rows, 'name', 'asc')
     expect(rows).toEqual(copy)
+  })
+})
+
+describe('toCsv', () => {
+  it('builds a CSV with headers and rows on a semicolon separator', () => {
+    const csv = toCsv(['Name', 'Phone'], [['Store A', '0550']])
+    expect(csv).toContain('Name;Phone')
+    expect(csv).toContain('Store A;0550')
+  })
+
+  it('quotes fields containing the separator or quotes and doubles inner quotes', () => {
+    const csv = toCsv(['Name'], [[`A; "B"`]])
+    expect(csv).toContain('"A; ""B"""')
+  })
+
+  it('prepends a UTF-8 BOM and uses CRLF line endings', () => {
+    const csv = toCsv(['a', 'b'], [['1', '2']])
+    expect(csv.charCodeAt(0)).toBe(0xfeff)
+    expect(csv).toContain('\r\n')
+  })
+
+  it('treats null/undefined values as empty strings', () => {
+    const csv = toCsv(['a', 'b', 'c'], [[null, undefined, 'x']])
+    expect(csv).toContain(';;x')
+  })
+})
+
+describe('new feature i18n completeness', () => {
+  it('every language has search keys', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.search.placeholder).toBeDefined()
+      expect(lang.search.customers).toBeDefined()
+      expect(lang.search.refrigerators).toBeDefined()
+      expect(lang.search.noResults).toBeDefined()
+    }
+  })
+
+  it('every language has dashboard needs-attention keys', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.dashboard.needsAttention).toBeDefined()
+      expect(lang.dashboard.needsAttentionClear).toBeDefined()
+      expect(lang.dashboard.criticalIssues).toBeDefined()
+    }
+  })
+
+  it('every language has visits.reportIssue and common.export', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.visits.reportIssue).toBeDefined()
+      expect(lang.common.export).toBeDefined()
+    }
   })
 })
 

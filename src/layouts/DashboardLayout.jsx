@@ -15,8 +15,10 @@ import {
   MoreHorizontal,
   Wifi,
   WifiOff,
+  Search,
 } from 'lucide-react'
 import BottomSheet from '../components/ui/BottomSheet'
+import GlobalSearch from '../components/layout/GlobalSearch'
 import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../i18n'
 import { ROLES } from '../constants/roles'
@@ -91,6 +93,7 @@ export default function DashboardLayout() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [moreOpen, setMoreOpen] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [online, setOnline] = useState(navigator.onLine)
 
   useEffect(() => {
@@ -124,8 +127,11 @@ export default function DashboardLayout() {
     <div className="flex h-full">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
-        <div className="px-5 py-5">
+        <div className="px-5 pt-5 pb-3">
           <Brand />
+        </div>
+        <div className="px-3 pb-2">
+          <GlobalSearch />
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto px-3">
           {desktopItems.map((item) => (
@@ -159,6 +165,16 @@ export default function DashboardLayout() {
         <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
           <Brand />
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMobileSearchOpen((v) => !v)}
+              className={`rounded-xl border border-slate-200 p-2 text-slate-600 transition-colors ${
+                mobileSearchOpen ? 'bg-brand-50 text-brand-700' : 'hover:bg-slate-100'
+              }`}
+              aria-label={t('search.placeholder')}
+            >
+              <Search className="h-4 w-4" />
+            </button>
             {!online && (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
                 <WifiOff className="h-3 w-3" />
@@ -170,6 +186,12 @@ export default function DashboardLayout() {
             </div>
           </div>
         </header>
+
+        {mobileSearchOpen && (
+          <div className="border-b border-slate-200 bg-white px-4 py-2 lg:hidden">
+            <GlobalSearch />
+          </div>
+        )}
 
         {!online && (
           <div className="bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-800 lg:hidden">

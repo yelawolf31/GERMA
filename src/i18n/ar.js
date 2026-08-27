@@ -74,6 +74,9 @@ export const ar = {
     recentWarnings: 'أحدث التحذيرات',
     clientsWithWarnings: 'زبائن لديهم تحذيرات نشطة',
     clientsAtRisk: 'زبائن في خطر (3 أو أكثر)',
+    criticalIssues: 'مشاكل حرجة مفتوحة',
+    needsAttention: 'يحتاج انتباهًا',
+    needsAttentionClear: 'كل شيء على ما يرام.',
   },
 
   businessType: {
@@ -210,6 +213,7 @@ export const ar = {
     photoLoadError: 'تعذر تحميل الصورة',
     downloadPhoto: 'تحميل',
     photo: 'صورة',
+    reportIssue: 'الإبلاغ عن مشكلة لهذه الثلاجة',
   },
 
   issues: {
@@ -441,6 +445,7 @@ export const ar = {
     delete: 'حذف',
     edit: 'تعديل',
     add: 'إضافة',
+    export: 'تصدير',
     search: 'بحث',
     loading: 'جاري التحميل...',
     noData: 'لا توجد بيانات.',
@@ -470,6 +475,13 @@ export const ar = {
     clear: 'مسح',
     yes: 'نعم',
     no: 'لا',
+  },
+
+  search: {
+    placeholder: 'ابحث عن عميل (الاسم، الهاتف) أو ثلاجة...',
+    customers: 'العملاء',
+    refrigerators: 'الثلاجات',
+    noResults: 'لا توجد نتائج.',
   },
 }
 

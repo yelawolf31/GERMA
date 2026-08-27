@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Plus, AlertTriangle } from 'lucide-react'
+import { Plus, AlertTriangle, Download } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -20,6 +20,7 @@ import { ISSUE_STATUSES, ISSUE_PRIORITIES } from '../constants/issues'
 import { formatDate } from '../utils/format'
 import { createIssue } from '../services/issues'
 import { useToast } from '../hooks/useToast'
+import { exportCsv } from '../utils/export'
 
 const PRIORITY_TONE = { low: 'blue', medium: 'yellow', high: 'orange', critical: 'red' }
 
@@ -61,16 +62,48 @@ export default function Issues() {
     }
   }
 
+  const handleExport = () => {
+    exportCsv(
+      'issues.csv',
+      [
+        t('customers.name'),
+        t('refrigerators.serialNumber'),
+        t('issues.issueType'),
+        t('issues.priority'),
+        t('issues.status'),
+        t('issues.reportedAt'),
+        t('issues.reportedBy'),
+        t('issues.description'),
+      ],
+      filtered.map((issue) => [
+        issue.customer?.name || '',
+        issue.refrigerator?.serial_number || '',
+        t(`issues.${issue.issue_type}`),
+        t(`issues.${issue.priority}`),
+        t(`issues.${issue.status}`),
+        formatDate(issue.created_at),
+        issue.reporter?.full_name || '',
+        issue.description || '',
+      ]),
+    )
+  }
+
   return (
     <div className="p-4 sm:p-6">
       <PageHeader
         title={t('issues.title')}
         subtitle={loading ? undefined : `${issues.filter((i) => i.status === 'open').length} ${t('issues.open').toLowerCase()}`}
         actions={
-          <Button onClick={() => setFormOpen(true)}>
-            <Plus className="h-4 w-4" />
-            {t('issues.add')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={handleExport} disabled={filtered.length === 0}>
+              <Download className="h-4 w-4" />
+              {t('common.export')}
+            </Button>
+            <Button onClick={() => setFormOpen(true)}>
+              <Plus className="h-4 w-4" />
+              {t('issues.add')}
+            </Button>
+          </div>
         }
       />
 
@@ -143,7 +176,10 @@ export default function Issues() {
 
       <Modal open={formOpen} onClose={() => setFormOpen(false)} title={t('issues.add')}>
         <IssueForm
-          initialValues={{ customer_id: searchParams.get('customer') || '' }}
+          initialValues={{
+            customer_id: searchParams.get('customer') || '',
+            refrigerator_id: searchParams.get('refrigerator') || '',
+          }}
           customers={customers}
           refrigerators={refrigerators}
           onSubmit={handleCreate}

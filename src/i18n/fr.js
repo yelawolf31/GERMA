@@ -74,6 +74,9 @@ export const fr = {
     recentWarnings: 'Avertissements récents',
     clientsWithWarnings: 'Clients avec avertissements actifs',
     clientsAtRisk: 'Clients à risque (3+)',
+    criticalIssues: 'Problèmes critiques ouverts',
+    needsAttention: 'Besoin d\'attention',
+    needsAttentionClear: 'Tout est en ordre.',
   },
 
   businessType: {
@@ -210,6 +213,7 @@ export const fr = {
     photoLoadError: 'Impossible de charger la photo',
     downloadPhoto: 'Télécharger',
     photo: 'Photo',
+    reportIssue: 'Signaler un problème pour ce réfrigérateur',
   },
 
   issues: {
@@ -441,6 +445,7 @@ export const fr = {
     delete: 'Supprimer',
     edit: 'Modifier',
     add: 'Ajouter',
+    export: 'Exporter',
     search: 'Rechercher',
     loading: 'Chargement...',
     noData: 'Aucune donnée.',
@@ -470,6 +475,13 @@ export const fr = {
     clear: 'Effacer',
     yes: 'Oui',
     no: 'Non',
+  },
+
+  search: {
+    placeholder: 'Rechercher un client (nom, téléphone) ou réfrigérateur...',
+    customers: 'Clients',
+    refrigerators: 'Réfrigérateurs',
+    noResults: 'Aucun résultat.',
   },
 }
 

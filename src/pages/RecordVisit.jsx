@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, AlertTriangle } from 'lucide-react'
 import Card from '../components/ui/Card'
 import Spinner from '../components/ui/Spinner'
 import ErrorState from '../components/ui/ErrorState'
@@ -35,6 +35,7 @@ export default function RecordVisit() {
   const [warningReason, setWarningReason] = useState('')
   const [warningReasonError, setWarningReasonError] = useState('')
   const [warningSaving, setWarningSaving] = useState(false)
+  const [reportIssueRefrigeratorId, setReportIssueRefrigeratorId] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -95,6 +96,9 @@ export default function RecordVisit() {
       if (payload.locationWarning) toast.info(t('visits.locationFailed'))
       toast.success(t('visits.saved'))
       setSavedVisitId(visit.id)
+      const needsAttention =
+        payload.refrigerator_condition === 'needs_maintenance' || payload.refrigerator_condition === 'broken'
+      setReportIssueRefrigeratorId(needsAttention ? payload.refrigerator_id || null : null)
       setWarningOpen(true)
     } catch (err) {
       toast.error(t('visits.saveFailed'))
@@ -107,6 +111,12 @@ export default function RecordVisit() {
 
   const handleSkipWarning = () => {
     navigate(`/customers/${customerId}`)
+  }
+
+  const handleReportIssue = () => {
+    const params = new URLSearchParams({ customer: customerId })
+    if (reportIssueRefrigeratorId) params.set('refrigerator', reportIssueRefrigeratorId)
+    navigate(`/issues?${params.toString()}`)
   }
 
   const handleSaveWarning = async () => {
@@ -185,6 +195,17 @@ export default function RecordVisit() {
 
       <Modal open={warningOpen} onClose={handleSkipWarning} title={t('warnings.visitWarning')}>
         <div className="space-y-4">
+          {reportIssueRefrigeratorId != null && (
+            <div className="flex flex-col gap-3 rounded-xl bg-amber-50 px-4 py-3 ring-1 ring-amber-200 sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex items-start gap-2 text-sm font-medium text-amber-800">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                {t('visits.reportIssue')}
+              </p>
+              <Button size="sm" variant="secondary" onClick={handleReportIssue} className="shrink-0">
+                {t('issues.add')}
+              </Button>
+            </div>
+          )}
           <p className="text-sm text-slate-600">{t('warnings.visitWarningReason')}</p>
           <Field label={t('warnings.reason')} required error={warningReasonError}>
             <Textarea

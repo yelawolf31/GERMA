@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Search, Camera } from 'lucide-react'
+import { MapPin, Search, Camera, Download } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import Card from '../components/ui/Card'
 import Spinner from '../components/ui/Spinner'
 import EmptyState from '../components/ui/EmptyState'
 import ErrorState from '../components/ui/ErrorState'
 import StatusBadge from '../components/ui/StatusBadge'
+import Button from '../components/ui/Button'
 import { Select, Input } from '../components/ui/Field'
 import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../i18n'
@@ -15,6 +16,8 @@ import { fetchUserProfiles } from '../services/users'
 import { useCustomers } from '../hooks/useCustomers'
 import { useDebounce } from '../hooks/useDebounce'
 import { formatDate, formatTime, startOfDaysAgo, startOfToday } from '../utils/format'
+import { exportCsv } from '../utils/export'
+import { getRefrigeratorConditionKey, getCleanlinessKey } from '../utils/statusLabels'
 
 const PAGE_SIZE = 15
 
@@ -153,9 +156,42 @@ export default function Visits() {
   const safePage = Math.min(page, pageCount)
   const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
+  const handleExport = () => {
+    exportCsv(
+      'visits.csv',
+      [
+        t('customers.name'),
+        t('visits.supervisor'),
+        t('visits.visitedAt'),
+        t('visits.condition'),
+        t('visits.cleanliness'),
+        t('common.notes'),
+        t('common.location'),
+      ],
+      filtered.map((v) => [
+        v.customer?.name || '',
+        v.supervisor?.full_name || '',
+        v.visited_at ? `${formatDate(v.visited_at)} ${formatTime(v.visited_at)}` : '',
+        t(getRefrigeratorConditionKey(v.refrigerator_condition)),
+        t(getCleanlinessKey(v.cleanliness)),
+        v.notes || '',
+        v.latitude != null && v.longitude != null ? `${v.latitude}, ${v.longitude}` : '',
+      ]),
+    )
+  }
+
   return (
     <div className="p-4 sm:p-6">
-      <PageHeader title={t('visits.title')} subtitle={loading ? undefined : `${summary.total} — ${summary.today} ${t('dashboard.todayVisits').toLowerCase()}`} />
+      <PageHeader
+        title={t('visits.title')}
+        subtitle={loading ? undefined : `${summary.total} — ${summary.today} ${t('dashboard.todayVisits').toLowerCase()}`}
+        actions={
+          <Button variant="secondary" onClick={handleExport} disabled={filtered.length === 0}>
+            <Download className="h-4 w-4" />
+            {t('common.export')}
+          </Button>
+        }
+      />
 
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Select value={range} onChange={(e) => { setRange(e.target.value); setPage(1) }}>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Search, Download } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
@@ -12,6 +12,9 @@ import { useDebounce } from '../hooks/useDebounce'
 import { useTranslation } from '../i18n'
 import { CUSTOMER_STATUSES } from '../constants/statuses'
 import { matchesCustomerSearch } from '../utils/filters'
+import { exportCsv } from '../utils/export'
+import { getCustomerStatusKey } from '../utils/statusLabels'
+import { formatDate } from '../utils/format'
 
 const PAGE_SIZE = 15
 
@@ -37,16 +40,50 @@ export default function Customers() {
 
   const resetPage = () => setPage(1)
 
+  const handleExport = () => {
+    exportCsv(
+      'customers.csv',
+      [
+        t('customers.name'),
+        t('common.phone'),
+        t('common.location'),
+        t('customers.wilaya'),
+        t('customers.commune'),
+        t('common.status'),
+        t('customers.refrigerators'),
+        t('customers.lastVisit'),
+        t('dashboard.openIssues'),
+      ],
+      filtered.map((c) => [
+        c.name,
+        c.phone || '',
+        [c.commune, c.wilaya].filter(Boolean).join(', '),
+        c.wilaya || '',
+        c.commune || '',
+        t(getCustomerStatusKey(c.status)),
+        c.refrigerators.length,
+        c.lastVisitAt ? formatDate(c.lastVisitAt) : '',
+        c.openIssueCount || 0,
+      ]),
+    )
+  }
+
   return (
     <div className="p-4 sm:p-6">
       <PageHeader
         title={t('customers.title')}
         subtitle={loading ? undefined : `${customers.length} ${t('customers.title').toLowerCase()}`}
         actions={
-          <Button onClick={() => navigate('/customers/add')}>
-            <Plus className="h-4 w-4" />
-            {t('customers.add')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={handleExport} disabled={filtered.length === 0}>
+              <Download className="h-4 w-4" />
+              {t('common.export')}
+            </Button>
+            <Button onClick={() => navigate('/customers/add')}>
+              <Plus className="h-4 w-4" />
+              {t('customers.add')}
+            </Button>
+          </div>
         }
       />
 

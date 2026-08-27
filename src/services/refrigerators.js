@@ -43,6 +43,22 @@ export async function fetchRefrigerators({ customerId = null, search = null } = 
   return data || []
 }
 
+/**
+ * Lightweight global search across refrigerators (serial number or model).
+ */
+export async function searchRefrigerators(query, limit = 6) {
+  const q = (query || '').trim()
+  if (!q) return []
+  const { data, error } = await supabase
+    .from('refrigerators')
+    .select('id, serial_number, model, status, customer:customers(id, name)')
+    .or(`serial_number.ilike.%${q}%,model.ilike.%${q}%`)
+    .order('serial_number')
+    .limit(limit)
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 export async function fetchRefrigeratorsByCustomer(customerId) {
   const { data, error } = await supabase
     .from('refrigerators')

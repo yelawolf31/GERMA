@@ -57,6 +57,22 @@ export async function fetchCustomers({ search = null, status = null } = {}) {
 }
 
 /**
+ * Lightweight global search across customers (name or phone).
+ */
+export async function searchCustomers(query, limit = 6) {
+  const q = (query || '').trim()
+  if (!q) return []
+  const { data, error } = await supabase
+    .from('customers')
+    .select('id, name, phone, commune, wilaya, business_type, status')
+    .or(`name.ilike.%${q}%,phone.ilike.%${q}%`)
+    .order('name')
+    .limit(limit)
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+/**
  * Fetch a single customer including creator name.
  */
 export async function fetchCustomerById(id) {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Refrigerator as RefrigeratorIcon } from 'lucide-react'
+import { Plus, Search, Download, Refrigerator as RefrigeratorIcon } from 'lucide-react'
 import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -13,6 +13,7 @@ import { useDebounce } from '../hooks/useDebounce'
 import { useTranslation } from '../i18n'
 import { REFRIGERATOR_STATUSES } from '../constants/statuses'
 import { getRefrigeratorStatusKey } from '../utils/statusLabels'
+import { exportCsv } from '../utils/export'
 
 const PAGE_SIZE = 15
 
@@ -45,16 +46,44 @@ export default function Refrigerators() {
   const safePage = Math.min(page, pageCount)
   const pageItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
+  const handleExport = () => {
+    exportCsv(
+      'refrigerators.csv',
+      [
+        t('refrigerators.serialNumber'),
+        t('refrigerators.model'),
+        t('refrigerators.status'),
+        t('customers.name'),
+        t('customers.wilaya'),
+        t('customers.commune'),
+      ],
+      filtered.map((r) => [
+        r.serial_number,
+        r.model || '',
+        t(getRefrigeratorStatusKey(r.status)),
+        r.customer?.name || '',
+        r.customer?.wilaya || '',
+        r.customer?.commune || '',
+      ]),
+    )
+  }
+
   return (
     <div className="p-4 sm:p-6">
       <PageHeader
         title={t('refrigerators.title')}
         subtitle={loading ? undefined : `${refrigerators.length} ${t('refrigerators.title').toLowerCase()}`}
         actions={
-          <Button onClick={() => navigate('/refrigerators/add')}>
-            <Plus className="h-4 w-4" />
-            {t('refrigerators.add')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={handleExport} disabled={filtered.length === 0}>
+              <Download className="h-4 w-4" />
+              {t('common.export')}
+            </Button>
+            <Button onClick={() => navigate('/refrigerators/add')}>
+              <Plus className="h-4 w-4" />
+              {t('refrigerators.add')}
+            </Button>
+          </div>
         }
       />
 
