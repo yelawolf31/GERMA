@@ -69,6 +69,11 @@ export const fr = {
     tablePriority: 'Priorité',
     tableStatus: 'Statut',
     tableActivity: 'Activité',
+    tableWarnings: 'Avertissements',
+    activeWarnings: 'Avertissements actifs',
+    recentWarnings: 'Avertissements récents',
+    clientsWithWarnings: 'Clients avec avertissements actifs',
+    clientsAtRisk: 'Clients à risque (3+)',
   },
 
   businessType: {
@@ -269,6 +274,7 @@ export const fr = {
     confirmDismiss: 'Annuler cet avertissement ?',
     visitWarning: 'Avertir le client pour cette visite',
     visitWarningReason: 'Raison de l\'avertissement',
+    active: 'Actif',
   },
 
   map: {

@@ -30,6 +30,7 @@ import {
   createDefaultMapFilters,
 } from '../utils/filters'
 import { sortRows } from '../utils/sort'
+import { countWarningsByCustomer } from '../utils/warningsStats'
 
 const t = (key) => key
 
@@ -607,12 +608,49 @@ describe('visit detail i18n completeness', () => {
       'tablePriority',
       'tableStatus',
       'tableActivity',
+      'tableWarnings',
+      'activeWarnings',
+      'recentWarnings',
+      'clientsWithWarnings',
+      'clientsAtRisk',
     ]
     for (const lang of [fr, en, ar]) {
       for (const key of keys) {
         expect(lang.dashboard[key]).toBeDefined()
       }
     }
+  })
+
+  it('all languages have warnings.active', () => {
+    for (const lang of [fr, en, ar]) {
+      expect(lang.warnings.active).toBeDefined()
+    }
+  })
+})
+
+describe('countWarningsByCustomer', () => {
+  it('returns empty object for no warnings', () => {
+    expect(countWarningsByCustomer([])).toEqual({})
+    expect(countWarningsByCustomer(null)).toEqual({})
+  })
+
+  it('excludes dismissed warnings', () => {
+    const warnings = [
+      { customer_id: 'a', dismissed: false },
+      { customer_id: 'a', dismissed: true },
+      { customer_id: 'b', dismissed: true },
+    ]
+    expect(countWarningsByCustomer(warnings)).toEqual({ a: 1 })
+  })
+
+  it('groups active warnings per customer', () => {
+    const warnings = [
+      { customer_id: 'a', dismissed: false },
+      { customer_id: 'a', dismissed: false },
+      { customer_id: 'a', dismissed: false },
+      { customer_id: 'b', dismissed: false },
+    ]
+    expect(countWarningsByCustomer(warnings)).toEqual({ a: 3, b: 1 })
   })
 })
 

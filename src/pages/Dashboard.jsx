@@ -7,6 +7,7 @@ import {
   Wrench,
   XCircle,
   AlertTriangle,
+  ShieldAlert,
   ClipboardList,
   Navigation,
   ArrowRight,
@@ -22,11 +23,13 @@ import { useAuth } from '../hooks/useAuth'
 import { useMapData } from '../hooks/useMapData'
 import { useVisits } from '../hooks/useVisits'
 import { useIssues } from '../hooks/useIssues'
+import { useAllWarnings } from '../hooks/useAllWarnings'
 import { useTranslation } from '../i18n'
 import { ROLES } from '../constants/roles'
 import { REFRIGERATOR_STATUSES } from '../constants/statuses'
 import { formatDate, formatTime, isToday, startOfDaysAgo } from '../utils/format'
 import { sortCustomersByDistance, formatDistance } from '../utils/geo'
+import { countWarningsByCustomer } from '../utils/warningsStats'
 import { useGeolocation } from '../hooks/useGeolocation'
 
 function StatCard({ icon: Icon, label, value, tone = 'brand' }) {
@@ -76,7 +79,18 @@ function CountCell({ value, danger }) {
   return <span className={`font-semibold ${danger ? 'text-red-600' : 'text-slate-700'}`}>{value}</span>
 }
 
-function AdminDashboard({ customers, visits, issues }) {
+function WarningCountPill({ count }) {
+  if (count >= 3) {
+    return (
+      <span className="inline-flex min-w-7 items-center justify-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+        {count}
+      </span>
+    )
+  }
+  return <CountCell value={count} />
+}
+
+function AdminDashboard({ customers, visits, issues, warnings }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -92,6 +106,16 @@ function AdminDashboard({ customers, visits, issues }) {
       todayVisits: visits.filter((v) => isToday(v.visited_at)).length,
     }
   }, [customers, visits, issues])
+
+  const warningCounts = useMemo(() => countWarningsByCustomer(warnings), [warnings])
+  const activeWarningCount = useMemo(() => Object.values(warningCounts).reduce((sum, n) => sum + n, 0), [warningCounts])
+  const atRiskCustomers = useMemo(
+    () =>
+      customers
+        .filter((c) => (warningCounts[c.id] || 0) >= 3)
+        .sort((a, b) => (warningCounts[b.id] || 0) - (warningCounts[a.id] || 0)),
+    [customers, warningCounts],
+  )
 
   const visitRows = useMemo(
     () =>
@@ -131,9 +155,10 @@ function AdminDashboard({ customers, visits, issues }) {
         refrigerators: c.refrigerators.length,
         lastVisitAt: c.lastVisitAt,
         openIssues: c.openIssueCount || 0,
+        warnings: warningCounts[c.id] || 0,
         status: c.status,
       })),
-    [customers],
+    [customers, warningCounts],
   )
 
   const refrigeratorRows = useMemo(
@@ -148,6 +173,21 @@ function AdminDashboard({ customers, visits, issues }) {
         })),
       ),
     [customers],
+  )
+
+  const warningRows = useMemo(
+    () =>
+      warnings.map((w) => ({
+        id: w.id,
+        customerId: w.customer_id,
+        customerName: w.customer?.name || '—',
+        location: [w.customer?.commune, w.customer?.wilaya].filter(Boolean).join(', '),
+        reason: w.reason,
+        issuer: w.issued_by_user?.full_name || '—',
+        status: w.dismissed ? 'dismissed' : 'active',
+        createdAt: w.created_at,
+      })),
+    [warnings],
   )
 
   const visitColumns = useMemo(
@@ -268,6 +308,13 @@ function AdminDashboard({ customers, visits, issues }) {
         render: (value) => <CountCell value={value} danger={value > 0} />,
       },
       {
+        key: 'warnings',
+        label: t('dashboard.tableWarnings'),
+        sortable: true,
+        align: 'center',
+        render: (value) => <WarningCountPill count={value} />,
+      },
+      {
         key: 'status',
         label: t('dashboard.tableStatus'),
         align: 'center',
@@ -307,6 +354,47 @@ function AdminDashboard({ customers, visits, issues }) {
     [t],
   )
 
+  const warningColumns = useMemo(
+    () => [
+      {
+        key: 'customerName',
+        label: t('dashboard.tableCustomer'),
+        sortable: true,
+        render: (value, row) => <NameCell primary={value} secondary={row.location} />,
+      },
+      {
+        key: 'reason',
+        label: t('warnings.reason'),
+        render: (value) => (
+          <span className="line-clamp-2 max-w-56 text-slate-600">{value || '—'}</span>
+        ),
+      },
+      {
+        key: 'issuer',
+        label: t('warnings.issuedBy'),
+        sortable: true,
+        render: (value) => <span className="text-slate-600">{value}</span>,
+      },
+      {
+        key: 'status',
+        label: t('dashboard.tableStatus'),
+        align: 'center',
+        render: (value) => <StatusBadge type="warning" value={value} />,
+      },
+      {
+        key: 'createdAt',
+        label: t('dashboard.date'),
+        sortable: true,
+        align: 'right',
+        render: (value) => <DateCell value={value} />,
+      },
+    ],
+    [t],
+  )
+
+  const atRiskLabel = (count) =>
+    count === 1 ? t('warnings.countSingular') : t('warnings.count').replace('{count}', count)
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
@@ -316,6 +404,7 @@ function AdminDashboard({ customers, visits, issues }) {
         <StatCard icon={Wrench} label={t('dashboard.needsMaintenance')} value={stats.needsMaintenance} tone="orange" />
         <StatCard icon={XCircle} label={t('dashboard.broken')} value={stats.broken} tone="red" />
         <StatCard icon={AlertTriangle} label={t('dashboard.openIssues')} value={stats.openIssues} tone="orange" />
+        <StatCard icon={ShieldAlert} label={t('dashboard.activeWarnings')} value={activeWarningCount} tone="red" />
         <StatCard icon={ClipboardList} label={t('dashboard.todayVisits')} value={stats.todayVisits} tone="green" />
       </div>
 
@@ -400,6 +489,55 @@ function AdminDashboard({ customers, visits, issues }) {
           />
         </Card>
       </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader
+            title={t('dashboard.recentWarnings')}
+            action={
+              <Link to="/customers" className="text-xs font-medium text-brand-700 hover:underline">
+                {t('dashboard.seeAll')}
+              </Link>
+            }
+          />
+          <DataTable
+            columns={warningColumns}
+            rows={warningRows.slice(0, 8)}
+            getRowKey={(row) => row.id}
+            onRowClick={(row) => navigate(`/customers/${row.customerId}`)}
+            emptyState={<EmptyState title={t('warnings.noWarnings')} />}
+            initialSort="createdAt"
+          />
+        </Card>
+
+        <Card>
+          <CardHeader title={t('dashboard.clientsAtRisk')} />
+          {atRiskCustomers.length === 0 ? (
+            <CardBody>
+              <EmptyState title={t('warnings.noWarnings')} />
+            </CardBody>
+          ) : (
+            <div className="divide-y divide-red-50">
+              {atRiskCustomers.slice(0, 6).map((customer) => (
+                <div key={customer.id} className="flex items-center gap-3 px-5 py-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-100">
+                    <ShieldAlert className="h-4 w-4 text-red-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-800">{customer.name}</p>
+                    <p className="text-xs font-medium text-red-600">{atRiskLabel(warningCounts[customer.id])}</p>
+                  </div>
+                  <Link to={`/customers/${customer.id}`}>
+                    <Button variant="secondary" size="sm">
+                      {t('customers.open')}
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   )
 }
@@ -442,7 +580,7 @@ function NearMeList({ customers, position }) {
   )
 }
 
-function SupervisorDashboard({ customers, visits, issues }) {
+function SupervisorDashboard({ customers, visits, issues, warnings }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { position, loading: locating, getCurrentPosition } = useGeolocation()
@@ -454,6 +592,16 @@ function SupervisorDashboard({ customers, visits, issues }) {
     if (!c.lastVisitAt) return true
     return new Date(c.lastVisitAt) < startOfDaysAgo(7)
   })
+
+  const warningCounts = useMemo(() => countWarningsByCustomer(warnings), [warnings])
+  const activeWarningCount = useMemo(() => Object.values(warningCounts).reduce((sum, n) => sum + n, 0), [warningCounts])
+  const customersWithWarnings = useMemo(
+    () =>
+      customers
+        .filter((c) => (warningCounts[c.id] || 0) > 0)
+        .sort((a, b) => (warningCounts[b.id] || 0) - (warningCounts[a.id] || 0)),
+    [customers, warningCounts],
+  )
 
   const visitRows = useMemo(
     () =>
@@ -499,12 +647,16 @@ function SupervisorDashboard({ customers, visits, issues }) {
     [t],
   )
 
+  const warningLabel = (count) =>
+    count === 1 ? t('warnings.countSingular') : t('warnings.count').replace('{count}', count)
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         <StatCard icon={ClipboardList} label={t('dashboard.todayVisits')} value={todayVisits.length} tone="green" />
         <StatCard icon={AlertTriangle} label={t('dashboard.openIssues')} value={myOpenIssues.length} tone="orange" />
         <StatCard icon={XCircle} label={t('dashboard.broken')} value={brokenRefrigerators.length} tone="red" />
+        <StatCard icon={ShieldAlert} label={t('dashboard.activeWarnings')} value={activeWarningCount} tone="red" />
         <StatCard icon={Store} label={t('dashboard.notVisitedRecently')} value={notVisitedRecently.length} tone="sky" />
       </div>
 
@@ -521,17 +673,51 @@ function SupervisorDashboard({ customers, visits, issues }) {
         <NearMeList customers={customers} position={position} />
       </Card>
 
-      <Card>
-        <CardHeader title={t('dashboard.recentVisits')} />
-        <DataTable
-          columns={visitColumns}
-          rows={visitRows.slice(0, 8)}
-          getRowKey={(row) => row.id}
-          onRowClick={(row) => navigate(`/visits/${row.id}`)}
-          emptyState={<EmptyState title={t('dashboard.noVisits')} />}
-          initialSort="visitedAt"
-        />
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader
+            title={t('dashboard.recentVisits')}
+            action={
+              <Link to="/visits" className="text-xs font-medium text-brand-700 hover:underline">
+                {t('dashboard.seeAll')}
+              </Link>
+            }
+          />
+          <DataTable
+            columns={visitColumns}
+            rows={visitRows.slice(0, 8)}
+            getRowKey={(row) => row.id}
+            onRowClick={(row) => navigate(`/visits/${row.id}`)}
+            emptyState={<EmptyState title={t('dashboard.noVisits')} />}
+            initialSort="visitedAt"
+          />
+        </Card>
+
+        <Card>
+          <CardHeader title={t('dashboard.clientsWithWarnings')} />
+          {customersWithWarnings.length === 0 ? (
+            <CardBody>
+              <EmptyState title={t('warnings.noWarnings')} />
+            </CardBody>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {customersWithWarnings.slice(0, 6).map((customer) => (
+                <div key={customer.id} className="flex items-center gap-3 px-5 py-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-800">{customer.name}</p>
+                    <p className="text-xs text-slate-500">{warningLabel(warningCounts[customer.id])}</p>
+                  </div>
+                  <Link to={`/customers/${customer.id}`}>
+                    <Button variant="secondary" size="sm">
+                      {t('customers.open')}
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
 
       <Card>
         <CardHeader title={t('dashboard.notVisitedRecently')} />
@@ -569,6 +755,7 @@ export default function Dashboard() {
   const { customers, loading, error, refresh } = useMapData()
   const { visits } = useVisits()
   const { issues } = useIssues()
+  const { warnings } = useAllWarnings()
 
   if (loading) {
     return (
@@ -606,9 +793,9 @@ export default function Dashboard() {
       </div>
 
       {isAdmin ? (
-        <AdminDashboard customers={customers} visits={visits} issues={issues} />
+        <AdminDashboard customers={customers} visits={visits} issues={issues} warnings={warnings} />
       ) : (
-        <SupervisorDashboard customers={customers} visits={visits} issues={issues} />
+        <SupervisorDashboard customers={customers} visits={visits} issues={issues} warnings={warnings} />
       )}
     </div>
   )

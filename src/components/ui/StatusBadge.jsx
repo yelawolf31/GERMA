@@ -25,6 +25,9 @@ const STATUS_META = {
   critical: { tone: 'red' },
 }
 
+// Warning values overlap with other statuses (active = customer), so tone is type-specific.
+const WARNING_TONES = { active: 'orange', dismissed: 'gray' }
+
 const LABEL_KEYS = {
   customer: (value) => getCustomerStatusKey(value),
   refrigerator: (value) => getRefrigeratorStatusKey(value),
@@ -32,20 +35,21 @@ const LABEL_KEYS = {
   cleanliness: (value) => getCleanlinessKey(value),
   issueStatus: (value) => `issues.${value}`,
   priority: (value) => `issues.${value}`,
+  warning: (value) => `warnings.${value}`,
 }
 
 /**
  * Status badge with translated label and color tone.
- * @param {'customer'|'refrigerator'|'condition'|'cleanliness'|'issueStatus'|'priority'} type
+ * @param {'customer'|'refrigerator'|'condition'|'cleanliness'|'issueStatus'|'priority'|'warning'} type
  * @param {string} value
  */
 export default function StatusBadge({ type, value, className = '' }) {
   const { t } = useTranslation()
   if (!value) return null
-  const meta = STATUS_META[value] || { tone: 'gray' }
+  const tone = (type === 'warning' && WARNING_TONES[value]) || STATUS_META[value]?.tone || 'gray'
   const key = LABEL_KEYS[type]?.(value)
   return (
-    <Badge tone={meta.tone} className={className}>
+    <Badge tone={tone} className={className}>
       {key ? t(key) : value}
     </Badge>
   )

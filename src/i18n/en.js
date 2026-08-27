@@ -69,6 +69,11 @@ export const en = {
     tablePriority: 'Priority',
     tableStatus: 'Status',
     tableActivity: 'Activity',
+    tableWarnings: 'Warnings',
+    activeWarnings: 'Active warnings',
+    recentWarnings: 'Recent warnings',
+    clientsWithWarnings: 'Customers with active warnings',
+    clientsAtRisk: 'Customers at risk (3+)',
   },
 
   businessType: {
@@ -269,6 +274,7 @@ export const en = {
     confirmDismiss: 'Dismiss this warning?',
     visitWarning: 'Warn the client for this visit',
     visitWarningReason: 'Warning reason',
+    active: 'Active',
   },
 
   map: {

@@ -1,6 +1,20 @@
 import { supabase } from '../lib/supabase'
 
 /**
+ * Fetch all warnings across customers (active + dismissed), newest first.
+ * Joins customer + issuer + dismisser names for the dashboard.
+ */
+export async function fetchAllWarnings() {
+  if (!supabase) throw new Error('Supabase non configuré')
+  const { data, error } = await supabase
+    .from('client_warnings')
+    .select('*, customer:customers(id, name, commune, wilaya), issued_by_user:profiles!client_warnings_issued_by_fkey(full_name), dismissed_by_user:profiles!client_warnings_dismissed_by_fkey(full_name)')
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+/**
  * Fetch all warnings for a customer (active + dismissed), newest first.
  */
 export async function fetchWarningsByCustomer(customerId) {

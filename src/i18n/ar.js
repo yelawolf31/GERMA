@@ -69,6 +69,11 @@ export const ar = {
     tablePriority: 'الأولوية',
     tableStatus: 'الوضع',
     tableActivity: 'النشاط',
+    tableWarnings: 'التحذيرات',
+    activeWarnings: 'التحذيرات النشطة',
+    recentWarnings: 'أحدث التحذيرات',
+    clientsWithWarnings: 'زبائن لديهم تحذيرات نشطة',
+    clientsAtRisk: 'زبائن في خطر (3 أو أكثر)',
   },
 
   businessType: {
@@ -269,6 +274,7 @@ export const ar = {
     confirmDismiss: 'إلغاء هذا التحذير؟',
     visitWarning: 'تحذير العميل لهذه الزيارة',
     visitWarningReason: 'سبب التحذير',
+    active: 'نشط',
   },
 
   map: {
