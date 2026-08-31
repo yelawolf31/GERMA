@@ -35,14 +35,6 @@ export async function uploadFile(bucket, folder, file, onProgress) {
 }
 
 /**
- * Get the public URL for a storage path (non-visit buckets only).
- */
-export function getPublicUrl(bucket, path) {
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path)
-  return data?.publicUrl || ''
-}
-
-/**
  * Create a short-lived signed URL for a private bucket path.
  * @param {string} bucket
  * @param {string} path
@@ -115,10 +107,9 @@ export async function uploadIssuePhotos(issueId, files) {
   const records = []
   for (const file of files) {
     const path = await uploadFile(BUCKETS.ISSUE_PHOTOS, issueId, file)
-    const publicUrl = getPublicUrl(BUCKETS.ISSUE_PHOTOS, path)
     const { data, error } = await supabase
       .from('issue_photos')
-      .insert({ issue_id: issueId, bucket: BUCKETS.ISSUE_PHOTOS, path, public_url: publicUrl })
+      .insert({ issue_id: issueId, bucket: BUCKETS.ISSUE_PHOTOS, path })
       .select()
       .single()
     if (error) {
@@ -168,10 +159,9 @@ export async function uploadCustomerPhotos(customerId, files) {
   const records = []
   for (const file of files) {
     const path = await uploadFile(BUCKETS.CUSTOMER_PHOTOS, customerId, file)
-    const publicUrl = getPublicUrl(BUCKETS.CUSTOMER_PHOTOS, path)
     const { data, error } = await supabase
       .from('customer_photos')
-      .insert({ customer_id: customerId, bucket: BUCKETS.CUSTOMER_PHOTOS, path, public_url: publicUrl })
+      .insert({ customer_id: customerId, bucket: BUCKETS.CUSTOMER_PHOTOS, path })
       .select()
       .single()
     if (error) {
@@ -204,10 +194,9 @@ export async function uploadRefrigeratorPhotos(refrigeratorId, files) {
   const records = []
   for (const file of files) {
     const path = await uploadFile(BUCKETS.REFRIGERATOR_PHOTOS, refrigeratorId, file)
-    const publicUrl = getPublicUrl(BUCKETS.REFRIGERATOR_PHOTOS, path)
     const { data, error } = await supabase
       .from('refrigerator_photos')
-      .insert({ refrigerator_id: refrigeratorId, bucket: BUCKETS.REFRIGERATOR_PHOTOS, path, public_url: publicUrl })
+      .insert({ refrigerator_id: refrigeratorId, bucket: BUCKETS.REFRIGERATOR_PHOTOS, path })
       .select()
       .single()
     if (error) {

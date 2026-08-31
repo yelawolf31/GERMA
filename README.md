@@ -7,14 +7,11 @@ PWA interne de gestion terrain pour Germa : clients, réfrigérateurs, visites d
 - **Carte** : Mapbox GL JS (clusters, marqueurs colorés, sélection, itinéraires)
 - **PWA** : installable, cache de tuiles Mapbox et pré-cache hors-ligne
 
-## Comptes de démonstration
+## Comptes
 
-| Rôle | Email | Mot de passe |
-| --- | --- | --- |
-| Admin | `admin@germa.dz` | `Admin123!` |
-| Superviseur | `supervisor@germa.dz` | `Super123!` |
+Les comptes ne sont **jamais** documentés en clair dans le dépôt. Ils sont créés par un administrateur via l'Edge Function `create-user` (qui utilise la clé `service_role` côté serveur uniquement). Les mots de passe sont choisis à la création et ne doivent pas être committés.
 
-> Ces comptes sont créés par la migration `010_seed_data.sql` (données de démonstration uniquement — à remplacer en production).
+> Des données de démonstration sont fournies par `supabase/migrations/010_seed_data.sql` (exécutées uniquement lors d'un `db reset` local de développement, jamais en production). Aucun identifiant réel ni mot de passe en clair n'est stocké dans le code source.
 
 ## Prérequis
 
@@ -69,9 +66,11 @@ Ou copier-coller chaque fichier `supabase/migrations/0XX_*.sql` dans **SQL Edito
 | `005_create_issues.sql` | Incidents + audit |
 | `006_create_products.sql` | Catalogue produits (indépendant) |
 | `007_create_audit_logs.sql` | Journal d'audit + triggers (insérer une ligne à chaque INSERT/UPDATE/DELETE) |
-| `008_create_storage_buckets.sql` | Buckets Storage (publics, photos de visites/incidents/clients/réfrigérateurs) + tables de référence photo + politiques d'upload |
+| `008_create_storage_buckets.sql` | Buckets Storage (photos visites/incidents/clients/réfrigérateurs) + tables de référence photo + politiques d'upload |
 | `009_create_rls_policies.sql` | **RLS** sur toutes les tables (voir matrice ci-dessous) |
-| `010_seed_data.sql` | Données de démonstration (Oran) + 2 comptes |
+| `010_seed_data.sql` | Données de démonstration locales (Oran) — jamais exécutées en production |
+| `014_private_visit_photos.sql` | Bucket `visit-photos` privé (URL signées) |
+| `017_private_photo_buckets.sql` | Tous les buckets photo passés **privés** (URL signées pour authentifiés) |
 
 ## Edge Function `create-user`
 
