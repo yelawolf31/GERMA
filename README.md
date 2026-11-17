@@ -71,6 +71,7 @@ Ou copier-coller chaque fichier `supabase/migrations/0XX_*.sql` dans **SQL Edito
 | `010_seed_data.sql` | Données de démonstration locales (Oran) — jamais exécutées en production |
 | `014_private_visit_photos.sql` | Bucket `visit-photos` privé (URL signées) |
 | `017_private_photo_buckets.sql` | Tous les buckets photo passés **privés** (URL signées pour authentifiés) |
+| `018_explicit_grants.sql` | **GRANTs explicites** par table (moindre privilège), `anon` révoqué, compatible avec les privilèges par défaut Supabase post-30/10/2026 |
 
 ## Edge Function `create-user`
 
@@ -172,6 +173,7 @@ germa-field-management/
 ## Sécurité
 
 - **RLS** activé sur toutes les tables ; la base rejette ce que l'UI masque.
-- La clé `service_role` n'est utilisée que dans l'Edge Function.
+- **GRANTs explicites** par table (migration `018`) : le rôle `anon` n'a **aucun** accès aux tables ; chaque rôle reçoit uniquement les verbes autorisés par ses politiques RLS.
+- La clé `service_role` n'est utilisée que dans les Edge Functions.
 - Les visites sont immuables au niveau base.
 - Le changement de statut superviseur est borné par la politique `with check` (seule la colonne `status` peut changer).

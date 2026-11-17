@@ -219,8 +219,10 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-# Disabled: accounts are created only by admins via the create-user Edge Function.
-enable_signup = false
+# NOTE: this flag maps to the email provider being enabled, so it must stay
+# true for existing users to be able to log in. Public signups are blocked by
+# the top-level [auth] enable_signup = false instead.
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
