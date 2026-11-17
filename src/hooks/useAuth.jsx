@@ -15,6 +15,21 @@ async function fetchProfile(userId) {
   return data
 }
 
+/**
+ * Best-effort auth audit logging.
+ * supabase.rpc() returns a thenable WITHOUT a `.catch()` method, so it must
+ * be wrapped with Promise.resolve() before attaching a handler. Audit logging
+ * must never block or break sign-in / sign-out.
+ */
+async function logAuthEvent(action) {
+  if (!supabase) return
+  try {
+    await Promise.resolve(supabase.rpc('log_auth_event', { action }))
+  } catch {
+    // ignore: audit logging is non-critical
+  }
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -52,7 +67,7 @@ export function AuthProvider({ children }) {
       setSession(newSession)
       if (newSession?.user) loadProfile(newSession.user)
       if (event === 'SIGNED_IN' && newSession?.user) {
-        supabase.rpc('log_auth_event', { action: 'LOGIN' }).catch(() => {})
+        void logAuthEvent('LOGIN')
       }
     })
 
@@ -70,7 +85,7 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     if (!supabase) return
-    await supabase.rpc('log_auth_event', { action: 'LOGOUT' }).catch(() => {})
+    await logAuthEvent('LOGOUT')
     await supabase.auth.signOut()
     setProfile(null)
   }, [])
