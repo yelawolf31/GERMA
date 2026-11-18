@@ -1,9 +1,11 @@
+import { AnimatePresence, m } from 'motion/react'
 import { SlidersHorizontal } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import Checkbox from '../ui/Checkbox'
 import { REFRIGERATOR_STATUSES, CUSTOMER_STATUSES } from '../../constants/statuses'
 import { getRefrigeratorStatusKey, getCustomerStatusKey } from '../../utils/statusLabels'
 import { VISIT_FILTERS } from '../../utils/filters'
+import { EASE_OUT } from '../../lib/motion'
 
 function toggle(list, value) {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value]
@@ -34,8 +36,17 @@ export default function MapFilters({ filters, onChange, open, onToggle }) {
         <span className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
 
-      {open && (
-        <div className="space-y-4 border-t border-slate-100 px-4 py-3">
+      <AnimatePresence initial={false}>
+        {open && (
+          <m.div
+            key="filters"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: EASE_OUT }}
+            className="overflow-hidden border-t border-slate-100"
+          >
+            <div className="space-y-4 px-4 py-3">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
               {t('map.refrigeratorStatus')}
@@ -105,8 +116,10 @@ export default function MapFilters({ filters, onChange, open, onToggle }) {
           >
             {t('common.reset')}
           </button>
-        </div>
-      )}
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

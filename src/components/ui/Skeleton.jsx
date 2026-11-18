@@ -1,5 +1,9 @@
+/**
+ * Skeleton placeholder with a subtle shimmer (disabled for reduced motion).
+ * Keeps the previous API: <Skeleton className="h-16 w-full" />
+ */
 export default function Skeleton({ className = '' }) {
-  return <div className={`animate-pulse rounded-lg bg-slate-200 ${className}`} />
+  return <div aria-hidden="true" className={`skeleton rounded-lg ${className}`} />
 }
 
 export function SkeletonList({ rows = 5, height = 'h-16' }) {

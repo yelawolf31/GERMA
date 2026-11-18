@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AnimatePresence, m } from 'motion/react'
 import { Mail, Lock, AlertTriangle } from 'lucide-react'
 import Button from '../components/ui/Button'
 import { Field, Input } from '../components/ui/Field'
@@ -7,6 +8,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../i18n'
 import { validateLogin } from '../utils/validators'
 import { isSupabaseConfigured } from '../lib/supabase'
+import { baseTransition } from '../lib/motion'
 
 export default function Login() {
   const { t } = useTranslation()
@@ -56,7 +58,12 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
-      <div className="w-full max-w-sm">
+      <m.div
+        className="w-full max-w-sm"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={baseTransition}
+      >
         <div className="mb-8 flex flex-col items-center text-center">
           <img src="/icons/logo.jpg" alt="Germa" className="mb-4 h-16 w-16 rounded-2xl object-cover shadow-lg" />
           <h1 className="text-xl font-bold text-slate-900">Germa Field</h1>
@@ -93,15 +100,25 @@ export default function Login() {
             </div>
           </Field>
 
-          {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{error}</p>
-          )}
+          <AnimatePresence>
+            {error && (
+              <m.p
+                key="login-error"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+              >
+                {error}
+              </m.p>
+            )}
+          </AnimatePresence>
 
           <Button type="submit" loading={loading} disabled={loading} className="w-full" size="lg">
             {t('auth.signIn')}
           </Button>
         </form>
-      </div>
+      </m.div>
     </div>
   )
 }

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AnimatePresence, m } from 'motion/react'
 import { Search, Store, Refrigerator, X } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import { useDebounce } from '../../hooks/useDebounce'
 import { searchCustomers } from '../../services/customers'
 import { searchRefrigerators } from '../../services/refrigerators'
+import { dropdownVariants } from '../../lib/motion'
 
 export default function GlobalSearch({ className = '' }) {
   const { t } = useTranslation()
@@ -102,8 +104,16 @@ export default function GlobalSearch({ className = '' }) {
         )}
       </div>
 
-      {open && hasQuery && (
-        <div className="absolute left-0 right-0 top-full z-40 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+      <AnimatePresence>
+        {open && hasQuery && (
+          <m.div
+            key="search-results"
+            variants={dropdownVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="absolute left-0 right-0 top-full z-40 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
+          >
           {loading ? (
             <p className="px-4 py-3 text-sm text-slate-500">{t('common.loading')}</p>
           ) : resultCount === 0 ? (
@@ -163,8 +173,9 @@ export default function GlobalSearch({ className = '' }) {
               )}
             </div>
           )}
-        </div>
-      )}
+          </m.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

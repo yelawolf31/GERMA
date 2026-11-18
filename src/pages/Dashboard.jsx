@@ -16,7 +16,8 @@ import {
 import Card, { CardBody, CardHeader } from '../components/ui/Card'
 import DataTable from '../components/ui/DataTable'
 import Button from '../components/ui/Button'
-import Spinner from '../components/ui/Spinner'
+import Skeleton from '../components/ui/Skeleton'
+import { StaggerGrid, StaggerItem } from '../components/ui/Motion'
 import EmptyState from '../components/ui/EmptyState'
 import StatusBadge from '../components/ui/StatusBadge'
 import NeedsAttentionStrip from '../components/dashboard/NeedsAttentionStrip'
@@ -42,17 +43,19 @@ function StatCard({ icon: Icon, label, value, tone = 'brand' }) {
     sky: 'bg-sky-50 text-sky-700',
   }
   return (
-    <Card>
-      <CardBody className="flex items-center gap-3">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-2xl font-bold leading-tight text-slate-900">{value}</p>
-          <p className="truncate text-xs text-slate-500">{label}</p>
-        </div>
-      </CardBody>
-    </Card>
+    <StaggerItem>
+      <Card>
+        <CardBody className="flex items-center gap-3">
+          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-2xl font-bold leading-tight text-slate-900">{value}</p>
+            <p className="truncate text-xs text-slate-500">{label}</p>
+          </div>
+        </CardBody>
+      </Card>
+    </StaggerItem>
   )
 }
 
@@ -398,7 +401,7 @@ function AdminDashboard({ customers, visits, issues, warnings }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+      <StaggerGrid className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
         <StatCard icon={Store} label={t('dashboard.totalCustomers')} value={stats.customers} />
         <StatCard icon={Refrigerator} label={t('dashboard.totalRefrigerators')} value={stats.refrigerators} tone="sky" />
         <StatCard icon={CheckCircle2} label={t('dashboard.working')} value={stats.working} tone="green" />
@@ -407,7 +410,7 @@ function AdminDashboard({ customers, visits, issues, warnings }) {
         <StatCard icon={AlertTriangle} label={t('dashboard.openIssues')} value={stats.openIssues} tone="orange" />
         <StatCard icon={ShieldAlert} label={t('dashboard.activeWarnings')} value={activeWarningCount} tone="red" />
         <StatCard icon={ClipboardList} label={t('dashboard.todayVisits')} value={stats.todayVisits} tone="green" />
-      </div>
+      </StaggerGrid>
 
       <NeedsAttentionStrip
         title={t('dashboard.needsAttention')}
@@ -694,13 +697,13 @@ function SupervisorDashboard({ customers, visits, issues, warnings }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+      <StaggerGrid className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         <StatCard icon={ClipboardList} label={t('dashboard.todayVisits')} value={todayVisits.length} tone="green" />
         <StatCard icon={AlertTriangle} label={t('dashboard.openIssues')} value={myOpenIssues.length} tone="orange" />
         <StatCard icon={XCircle} label={t('dashboard.broken')} value={brokenRefrigerators.length} tone="red" />
         <StatCard icon={ShieldAlert} label={t('dashboard.activeWarnings')} value={activeWarningCount} tone="red" />
         <StatCard icon={Store} label={t('dashboard.notVisitedRecently')} value={notVisitedRecently.length} tone="sky" />
-      </div>
+      </StaggerGrid>
 
       <NeedsAttentionStrip
         title={t('dashboard.needsAttention')}
@@ -830,6 +833,23 @@ function SupervisorDashboard({ customers, visits, issues, warnings }) {
   )
 }
 
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <Skeleton key={index} className="h-[76px] w-full" />
+        ))}
+      </div>
+      <Skeleton className="h-16 w-full rounded-2xl" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const { t } = useTranslation()
   const { role, isAdmin } = useAuth()
@@ -841,7 +861,11 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="p-4 sm:p-6">
-        <Spinner label={t('common.loadingData')} />
+        <div className="mb-6 space-y-2">
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <DashboardSkeleton />
       </div>
     )
   }

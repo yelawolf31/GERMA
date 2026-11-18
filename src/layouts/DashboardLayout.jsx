@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { AnimatePresence, m } from 'motion/react'
 import {
   LayoutDashboard,
   Map,
@@ -19,6 +20,8 @@ import {
 } from 'lucide-react'
 import BottomSheet from '../components/ui/BottomSheet'
 import GlobalSearch from '../components/layout/GlobalSearch'
+import PageTransition from '../components/layout/PageTransition'
+import { EASE_OUT } from '../lib/motion'
 import { useAuth } from '../hooks/useAuth'
 import { useTranslation } from '../i18n'
 import { ROLES } from '../constants/roles'
@@ -126,7 +129,12 @@ export default function DashboardLayout() {
   return (
     <div className="flex h-full">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
+      <m.aside
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.24, ease: EASE_OUT }}
+        className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex"
+      >
         <div className="px-5 pt-5 pb-3">
           <Brand />
         </div>
@@ -157,7 +165,7 @@ export default function DashboardLayout() {
             </button>
           </div>
         </div>
-      </aside>
+      </m.aside>
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
@@ -187,11 +195,22 @@ export default function DashboardLayout() {
           </div>
         </header>
 
-        {mobileSearchOpen && (
-          <div className="border-b border-slate-200 bg-white px-4 py-2 lg:hidden">
-            <GlobalSearch />
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {mobileSearchOpen && (
+            <m.div
+              key="mobile-search"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: EASE_OUT }}
+              className="overflow-hidden border-b border-slate-200 bg-white lg:hidden"
+            >
+              <div className="px-4 py-2">
+                <GlobalSearch />
+              </div>
+            </m.div>
+          )}
+        </AnimatePresence>
 
         {!online && (
           <div className="bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-800 lg:hidden">
@@ -200,7 +219,9 @@ export default function DashboardLayout() {
         )}
 
         <main className="min-h-0 flex-1 overflow-y-auto">
-          <Outlet />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </main>
 
         {/* Mobile bottom nav */}

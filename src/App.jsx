@@ -1,10 +1,13 @@
 import { AuthProvider } from './hooks/useAuth'
+import { MotionProvider } from './components/ui/Motion'
 import AppRoutes from './routes/AppRoutes'
 
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <MotionProvider>
+        <AppRoutes />
+      </MotionProvider>
     </AuthProvider>
   )
 }
