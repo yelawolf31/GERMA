@@ -130,7 +130,7 @@ export default function UserDetails() {
       toast.success(t('users.userDeleted'))
       navigate('/users')
     } catch (err) {
-      toast.error(t('users.deleteFailed'))
+      toast.error(err.message || t('users.deleteFailed'))
       setDeleting(false)
     }
   }

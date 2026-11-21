@@ -433,6 +433,15 @@ export const ar = {
     language: 'اللغة',
     about: 'حول',
     version: 'الإصدار',
+    storageCleanup: 'تنظيف التخزين',
+    storageCleanupHint:
+      'يكتشف الصور الموجودة في التخزين دون مرجع في قاعدة البيانات (ملفات يتيمة).',
+    storageAnalyze: 'تحليل التخزين',
+    storageFound: 'تم العثور على {count} ملفاً يتيماً.',
+    storageCleanupNone: 'لا توجد صور يتيمة.',
+    storagePurge: 'حذف {count} ملفاً',
+    storageCleanupConfirm: 'حذف {count} ملفاً يتيماً نهائياً؟ لا يمكن التراجع عن هذا الإجراء.',
+    storageCleanupDone: 'تم حذف {count} ملفاً.',
     signOut: 'تسجيل الخروج',
   },
 

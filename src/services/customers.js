@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { collectCustomerPhotoFiles, purgePhotoFiles } from './storage'
 
 const CUSTOMER_SELECT = `
   *,
@@ -123,9 +124,17 @@ export async function updateCustomer(id, payload) {
 
 /**
  * Delete a customer. Admin only (RLS enforced).
+ * Photo binaries are purged after the row (and its cascades) are gone.
  */
 export async function deleteCustomer(id) {
-  const { error } = await supabase.from('customers').delete().eq('id', id)
+  const photoFiles = await collectCustomerPhotoFiles(id)
+
+  const { data, error } = await supabase.from('customers').delete().eq('id', id).select('id')
   if (error) throw new Error(error.message)
+  if (!data || data.length === 0) {
+    throw new Error('Suppression non autorisée ou client introuvable.')
+  }
+
+  await purgePhotoFiles(photoFiles)
   return true
 }

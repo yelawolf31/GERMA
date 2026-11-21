@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { collectIssuePhotoFiles, purgePhotoFiles } from './storage'
 
 const ISSUE_SELECT = `
   *,
@@ -91,8 +92,19 @@ export async function updateIssue(id, payload) {
   return data
 }
 
+/**
+ * Delete an issue. Admin only (RLS enforced).
+ * Its photo binaries are purged after the row (and cascade) is gone.
+ */
 export async function deleteIssue(id) {
-  const { error } = await supabase.from('issues').delete().eq('id', id)
+  const photoFiles = await collectIssuePhotoFiles(id)
+
+  const { data, error } = await supabase.from('issues').delete().eq('id', id).select('id')
   if (error) throw new Error(error.message)
+  if (!data || data.length === 0) {
+    throw new Error('Suppression non autorisée ou incident introuvable.')
+  }
+
+  await purgePhotoFiles(photoFiles)
   return true
 }

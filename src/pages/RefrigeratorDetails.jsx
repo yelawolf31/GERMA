@@ -14,6 +14,7 @@ import { supabase } from '../lib/supabase'
 import { formatDate } from '../utils/format'
 import { getRefrigeratorStatusKey } from '../utils/statusLabels'
 import { useToast } from '../hooks/useToast'
+import { deleteRefrigerator } from '../services/refrigerators'
 
 function InfoRow({ label, value }) {
   return (
@@ -73,8 +74,7 @@ export default function RefrigeratorDetails() {
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      const { error } = await supabase.from('refrigerators').delete().eq('id', id)
-      if (error) throw new Error(error.message)
+      await deleteRefrigerator(id)
       toast.success(t('refrigerators.deleted'))
       navigate('/refrigerators')
     } catch (err) {

@@ -72,6 +72,8 @@ Ou copier-coller chaque fichier `supabase/migrations/0XX_*.sql` dans **SQL Edito
 | `014_private_visit_photos.sql` | Bucket `visit-photos` privé (URL signées) |
 | `017_private_photo_buckets.sql` | Tous les buckets photo passés **privés** (URL signées pour authentifiés) |
 | `018_explicit_grants.sql` | **GRANTs explicites** par table (moindre privilège), `anon` révoqué, compatible avec les privilèges par défaut Supabase post-30/10/2026 |
+| `019_delete_cleanup.sql` | Triggers d'audit sur suppression de visites/avertissements + rapport admin des photos orphelines |
+| `020_orphan_report_placeholders.sql` | Exclut les marqueurs internes `.emptyFolderPlaceholder` du rapport d'orphelins |
 
 ## Edge Function `create-user`
 
@@ -176,4 +178,5 @@ germa-field-management/
 - **GRANTs explicites** par table (migration `018`) : le rôle `anon` n'a **aucun** accès aux tables ; chaque rôle reçoit uniquement les verbes autorisés par ses politiques RLS.
 - La clé `service_role` n'est utilisée que dans les Edge Functions.
 - Les visites sont immuables au niveau base.
+- **Suppression** : les lignes liées sont supprimées en cascade, puis les photos correspondantes sont effacées du stockage (clients, réfrigérateurs, incidents). Un outil administrateur (**Paramètres → Nettoyage du stockage**) détecte et purge les fichiers orphelins restants.
 - Le changement de statut superviseur est borné par la politique `with check` (seule la colonne `status` peut changer).

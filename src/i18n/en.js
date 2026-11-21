@@ -433,6 +433,15 @@ export const en = {
     language: 'Language',
     about: 'About',
     version: 'Version',
+    storageCleanup: 'Storage cleanup',
+    storageCleanupHint:
+      'Finds photos stored in the bucket but no longer referenced in the database (orphaned files).',
+    storageAnalyze: 'Analyze storage',
+    storageFound: '{count} orphaned file(s) found.',
+    storageCleanupNone: 'No orphaned photos.',
+    storagePurge: 'Delete {count} file(s)',
+    storageCleanupConfirm: 'Permanently delete {count} orphaned file(s)? This cannot be undone.',
+    storageCleanupDone: '{count} file(s) deleted.',
     signOut: 'Sign out',
   },
 

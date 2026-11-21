@@ -12,7 +12,7 @@ export const PROJECT_INFO = {
   // Date this documentation page was last reviewed.
   documentedOn: '2026-11-21',
   // Counts taken from supabase/migrations and the public schema.
-  migrationCount: 18,
+  migrationCount: 20,
   tableCount: 12,
   initiator: 'HANI YEBESET',
   email: 'haniyebeset@gmail.com',

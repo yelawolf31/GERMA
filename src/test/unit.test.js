@@ -958,3 +958,36 @@ describe('refrigerator status display consistency', () => {
     }
   })
 })
+
+describe('storage cleanup helpers', () => {
+  it('chunkArray splits into batches and ignores invalid input', async () => {
+    const { chunkArray } = await import('../services/storage')
+    expect(chunkArray([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]])
+    expect(chunkArray([], 2)).toEqual([])
+    expect(chunkArray(null, 2)).toEqual([])
+    expect(chunkArray([1, 2], 0)).toEqual([])
+  })
+
+  it('groupPhotoFilesByBucket groups, de-duplicates and filters invalid entries', async () => {
+    const { groupPhotoFilesByBucket, BUCKETS } = await import('../services/storage')
+    const grouped = groupPhotoFilesByBucket([
+      { bucket: BUCKETS.VISIT_PHOTOS, path: 'visit/1.jpg' },
+      { bucket: BUCKETS.VISIT_PHOTOS, path: 'visit/1.jpg' },
+      { bucket: BUCKETS.VISIT_PHOTOS, path: 'visit/2.jpg' },
+      { bucket: BUCKETS.ISSUE_PHOTOS, path: 'issue/1.jpg' },
+      { bucket: 'unknown-bucket', path: 'x.jpg' },
+      { bucket: BUCKETS.CUSTOMER_PHOTOS },
+      null,
+    ])
+
+    expect(grouped[BUCKETS.VISIT_PHOTOS]).toEqual(['visit/1.jpg', 'visit/2.jpg'])
+    expect(grouped[BUCKETS.ISSUE_PHOTOS]).toEqual(['issue/1.jpg'])
+    expect(Object.keys(grouped)).toHaveLength(2)
+  })
+
+  it('groupPhotoFilesByBucket handles an empty list', async () => {
+    const { groupPhotoFilesByBucket } = await import('../services/storage')
+    expect(groupPhotoFilesByBucket(undefined)).toEqual({})
+    expect(groupPhotoFilesByBucket([])).toEqual({})
+  })
+})

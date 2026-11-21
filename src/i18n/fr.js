@@ -433,6 +433,15 @@ export const fr = {
     language: 'Langue',
     about: 'À propos',
     version: 'Version',
+    storageCleanup: 'Nettoyage du stockage',
+    storageCleanupHint:
+      "Détecte les photos présentes dans le stockage mais sans référence en base (fichiers orphelins).",
+    storageAnalyze: 'Analyser le stockage',
+    storageFound: '{count} fichier(s) orphelin(s) trouvé(s).',
+    storageCleanupNone: 'Aucune photo orpheline.',
+    storagePurge: 'Supprimer {count} fichier(s)',
+    storageCleanupConfirm: 'Supprimer définitivement {count} fichier(s) orphelin(s) ? Cette action est irréversible.',
+    storageCleanupDone: '{count} fichier(s) supprimé(s).',
     signOut: 'Se déconnecter',
   },
 

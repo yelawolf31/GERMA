@@ -32,6 +32,7 @@ import { supabase } from '../lib/supabase'
 import { getCustomerMarkerStatus, getMarkerColor } from '../utils/markerStatus'
 import { formatDate, formatTime } from '../utils/format'
 import { useToast } from '../hooks/useToast'
+import { deleteCustomer } from '../services/customers'
 
 function InfoRow({ label, value }) {
   return (
@@ -96,8 +97,7 @@ export default function CustomerDetails() {
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      const { error } = await supabase.from('customers').delete().eq('id', id)
-      if (error) throw new Error(error.message)
+      await deleteCustomer(id)
       toast.success(t('customers.deleted'))
       navigate('/customers')
     } catch (err) {

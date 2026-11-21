@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { collectRefrigeratorPhotoFiles, purgePhotoFiles } from './storage'
 
 const REFRIGERATOR_SELECT = `
   *,
@@ -126,9 +127,20 @@ export async function updateRefrigeratorStatus(id, status) {
   return data
 }
 
+/**
+ * Delete a refrigerator. Admin only (RLS enforced).
+ * Its own photos are purged; existing visits/issues keep their history.
+ */
 export async function deleteRefrigerator(id) {
-  const { error } = await supabase.from('refrigerators').delete().eq('id', id)
+  const photoFiles = await collectRefrigeratorPhotoFiles(id)
+
+  const { data, error } = await supabase.from('refrigerators').delete().eq('id', id).select('id')
   if (error) throw new Error(error.message)
+  if (!data || data.length === 0) {
+    throw new Error('Suppression non autorisée ou réfrigérateur introuvable.')
+  }
+
+  await purgePhotoFiles(photoFiles)
   return true
 }
 

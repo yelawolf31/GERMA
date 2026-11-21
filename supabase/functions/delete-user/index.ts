@@ -84,7 +84,17 @@ Deno.serve(async (req) => {
 
   const { error: deleteError } = await adminClient.auth.admin.deleteUser(user_id)
   if (deleteError) {
-    return json({ error: deleteError.message || 'Échec de la suppression' }, 400, corsHeaders)
+    const message = String(deleteError.message || '')
+    const restricted = /foreign key|violates|restrict|audit_logs/i.test(message)
+    return json(
+      {
+        error: restricted
+          ? "Suppression impossible : cet utilisateur possède un historique (visites, incidents, avertissements ou journal d'audit). Conservez le compte ou traitez son historique au préalable."
+          : message || 'Échec de la suppression',
+      },
+      restricted ? 409 : 400,
+      corsHeaders,
+    )
   }
 
   const { error: profileDeleteError } = await adminClient
