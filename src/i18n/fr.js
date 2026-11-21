@@ -32,6 +32,7 @@ export const fr = {
     settings: 'Paramètres',
     users: 'Utilisateurs',
     auditLogs: 'Journal d\'audit',
+    about: 'À propos',
     more: 'Plus',
     logout: 'Déconnexion',
   },
@@ -482,6 +483,93 @@ export const fr = {
     customers: 'Clients',
     refrigerators: 'Réfrigérateurs',
     noResults: 'Aucun résultat.',
+  },
+
+  about: {
+    title: 'À propos & développement',
+    subtitle: 'Documentation officielle du projet',
+    documentedOn: 'Documentation arrêtée au',
+    projectTitle: 'Informations du projet',
+    projectName: 'Nom du projet',
+    projectType: 'Type de projet',
+    projectTypeValue: 'Système de gestion terrain',
+    description:
+      "GERMA est une application web progressive (PWA) de gestion terrain qui centralise les clients, les réfrigérateurs, les visites de supervision, les incidents et les avertissements. Elle fournit une cartographie, des tableaux de bord, des rapports et un journal d'audit aux équipes administratives et aux superviseurs.",
+    firstDate: 'Première date de développement documentée',
+    version: 'Version actuelle',
+    versionNote: "Valeur déclarée dans package.json. Aucune étiquette de version publiée.",
+    status: 'Statut',
+    statusValue: 'En production',
+    ownerTitle: 'Initiateur & développement',
+    initiator: 'Initiateur du projet',
+    functionalDesign: 'Conception fonctionnelle',
+    developer: 'Développeur',
+    email: 'E-mail',
+    humanTitle: 'Contributions humaines',
+    humanBody:
+      "Initiation du projet, cadrage des besoins métier, conception fonctionnelle, définition des règles de gestion et validation des livrables.",
+    aiTitle: 'Mise en œuvre assistée par IA',
+    aiBody:
+      "Implémentation technique réalisée avec l'assistance d'outils de développement assistés par IA, sous la conduite et la validation du développeur.",
+    assistant: 'Assistant de développement',
+    archTitle: 'Architecture technique',
+    archIntro: 'Technologies réellement utilisées, extraites du code source et des fichiers de configuration.',
+    frontend: 'Architecture frontend',
+    frontendBody:
+      "Application monopage React 19 + Vite 8, routage React Router 7, interface Tailwind CSS 4, icônes Lucide et animations Motion. Découpage du code par page et rendu côté client.",
+    backend: 'Infrastructure backend',
+    backendBody:
+      "Supabase : base PostgreSQL, authentification, stockage objet et Edge Functions (Deno) pour les opérations administrateur sensibles.",
+    database: 'Architecture de la base de données',
+    databaseBody:
+      "PostgreSQL 17, {tables} tables métier, index, contraintes, triggers d'audit et {migrations} migrations versionnées. Row Level Security activée sur toutes les tables.",
+    auth: 'Authentification & autorisation',
+    authBody:
+      "Supabase Auth (e-mail et mot de passe) avec jetons JWT et deux rôles : administrateur et superviseur. Les comptes sont créés par un administrateur via Edge Function ; l'inscription publique est désactivée.",
+    security: 'Mécanismes de sécurité',
+    securityBody:
+      "RLS sur toutes les tables, GRANTs explicites au moindre privilège, journal d'audit déclenché en base, visites immuables, buckets photo privés avec URL signées, en-têtes CSP et validation des entrées. La clé service_role reste exclusivement côté serveur.",
+    integrations: 'APIs & intégrations externes',
+    integrationsBody:
+      "API REST Supabase (PostgREST), Supabase Auth, Supabase Storage, Edge Functions, Mapbox GL JS pour la cartographie et Recharts pour les rapports.",
+    pwa: 'Capacités PWA',
+    pwaBody:
+      "Manifeste installable, service worker Workbox, coque applicative hors ligne, cache des tuiles Mapbox et mise à jour automatique en arrière-plan.",
+    modules: 'Modules principaux',
+    stackTitle: 'Technologies',
+    roles: 'Rôles',
+    rolesValue: 'Administrateur · Superviseur',
+    languages: 'Langues',
+    languagesValue: 'Français · English · العربية',
+    historyTitle: 'Historique de développement',
+    historyIntro:
+      "Chronologie établie à partir de l'historique Git du dépôt. Les dates et références de commit sont celles du dépôt.",
+    initialCommit: 'Premier commit documenté',
+    milestones: 'Jalons majeurs',
+    kind_foundation: 'Fondation',
+    kind_feature: 'Fonctionnalité',
+    kind_fix: 'Correctif',
+    kind_security: 'Sécurité',
+    kind_architecture: 'Architecture',
+    ipTitle: 'Auteur & propriété intellectuelle',
+    conception: 'Initiation & conception',
+    conceptionBody:
+      "Le projet GERMA a été initié et conçu par HANI YEBESET pour répondre aux besoins de gestion terrain de l'entreprise.",
+    designContrib: 'Contributions de conception fonctionnelle',
+    designBody:
+      "Définition des parcours métier (clients, réfrigérateurs, visites, incidents, avertissements), des rôles et des règles de gestion.",
+    devContrib: 'Contributions de développement',
+    devBody:
+      "Pilotage de l'implémentation, choix techniques, revue et validation du code produit avec l'assistance d'outils d'IA.",
+    identification: 'Identification du projet',
+    dossier: "Dossier de preuve d'antériorité technique",
+    dossierBody:
+      "Un dossier externe de preuve d'antériorité technique peut être constitué (dépôt Git, horodatage des commits, migrations versionnées, artefacts de build). Cette page n'en expose pas le contenu.",
+    legalNote:
+      "Cette section distingue les faits documentés des revendications qui nécessitent une vérification juridique. Aucune propriété exclusive ni déclaration légale non vérifiée n'est affirmée ici.",
+    privacyTitle: 'Sécurité & confidentialité',
+    privacyBody:
+      "Cette page n'affiche aucune clé d'API, aucun secret, aucun jeton, aucun mot de passe ni identifiant d'infrastructure.",
   },
 }
 

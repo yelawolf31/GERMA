@@ -24,6 +24,7 @@ const Settings = lazy(() => import('../pages/Settings'))
 const Users = lazy(() => import('../pages/Users'))
 const UserDetails = lazy(() => import('../pages/UserDetails'))
 const AuditLogs = lazy(() => import('../pages/AuditLogs'))
+const About = lazy(() => import('../pages/About'))
 const NotFound = lazy(() => import('../pages/NotFound'))
 
 function PageLoader() {
@@ -65,6 +66,7 @@ export default function AppRoutes() {
           <Route path="/issues" element={withSuspense(Issues)} />
           <Route path="/reports" element={withSuspense(Reports)} />
           <Route path="/settings" element={withSuspense(Settings)} />
+          <Route path="/about" element={withSuspense(About)} />
 
           <Route element={<RoleRoute roles={[ROLES.ADMIN]} />}>
             <Route path="/users" element={withSuspense(Users)} />

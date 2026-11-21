@@ -17,6 +17,7 @@ import {
   Wifi,
   WifiOff,
   Search,
+  Info,
 } from 'lucide-react'
 import BottomSheet from '../components/ui/BottomSheet'
 import GlobalSearch from '../components/layout/GlobalSearch'
@@ -37,6 +38,7 @@ const NAV_ITEMS = [
   { to: '/settings', icon: Settings, key: 'nav.settings', roles: [ROLES.ADMIN, ROLES.SUPERVISOR] },
   { to: '/users', icon: Users, key: 'nav.users', roles: [ROLES.ADMIN] },
   { to: '/audit-logs', icon: ScrollText, key: 'nav.auditLogs', roles: [ROLES.ADMIN] },
+  { to: '/about', icon: Info, key: 'nav.about', roles: [ROLES.ADMIN, ROLES.SUPERVISOR] },
 ]
 
 const MOBILE_PRIMARY = ['/dashboard', '/map', '/customers', '/visits']

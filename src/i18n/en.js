@@ -32,6 +32,7 @@ export const en = {
     settings: 'Settings',
     users: 'Users',
     auditLogs: 'Audit log',
+    about: 'About',
     more: 'More',
     logout: 'Logout',
   },
@@ -482,6 +483,93 @@ export const en = {
     customers: 'Customers',
     refrigerators: 'Refrigerators',
     noResults: 'No results.',
+  },
+
+  about: {
+    title: 'About & development',
+    subtitle: 'Official project documentation',
+    documentedOn: 'Documentation as of',
+    projectTitle: 'Project information',
+    projectName: 'Project name',
+    projectType: 'Project type',
+    projectTypeValue: 'Field Management System',
+    description:
+      "GERMA is a progressive web app (PWA) for field management that centralises customers, refrigerators, supervision visits, issues and warnings. It provides mapping, dashboards, reports and an audit log for administrative teams and supervisors.",
+    firstDate: 'First documented development date',
+    version: 'Current version',
+    versionNote: "Value declared in package.json. No release tag has been published.",
+    status: 'Status',
+    statusValue: 'In production',
+    ownerTitle: 'Initiator & development',
+    initiator: 'Project initiator',
+    functionalDesign: 'Functional design',
+    developer: 'Developer',
+    email: 'Email',
+    humanTitle: 'Human contributions',
+    humanBody:
+      "Project initiation, business requirements, functional design, definition of business rules and validation of deliverables.",
+    aiTitle: 'AI-assisted implementation',
+    aiBody:
+      "Technical implementation carried out with AI-powered development tools, under the developer's direction and review.",
+    assistant: 'Development assistant',
+    archTitle: 'Technical architecture',
+    archIntro: 'Technologies actually used, extracted from the source code and configuration files.',
+    frontend: 'Frontend architecture',
+    frontendBody:
+      "React 19 + Vite 8 single-page application, React Router 7 routing, Tailwind CSS 4 interface, Lucide icons and Motion animations. Page-level code splitting and client-side rendering.",
+    backend: 'Backend infrastructure',
+    backendBody:
+      "Supabase: PostgreSQL database, authentication, object storage and Edge Functions (Deno) for sensitive administrator operations.",
+    database: 'Database architecture',
+    databaseBody:
+      "PostgreSQL 17, {tables} business tables, indexes, constraints, audit triggers and {migrations} versioned migrations. Row Level Security enabled on every table.",
+    auth: 'Authentication & authorization',
+    authBody:
+      "Supabase Auth (email and password) with JWT tokens and two roles: administrator and supervisor. Accounts are created by an administrator through an Edge Function; public signup is disabled.",
+    security: 'Security mechanisms',
+    securityBody:
+      "Row Level Security on every table, explicit least-privilege grants, database-triggered audit logging, immutable visits, private photo buckets with signed URLs, CSP headers and input validation. The service_role key stays server-side only.",
+    integrations: 'APIs & external integrations',
+    integrationsBody:
+      "Supabase REST API (PostgREST), Supabase Auth, Supabase Storage, Edge Functions, Mapbox GL JS for mapping and Recharts for reports.",
+    pwa: 'PWA capabilities',
+    pwaBody:
+      "Installable manifest, Workbox service worker, offline app shell, Mapbox tile caching and automatic background updates.",
+    modules: 'Main modules',
+    stackTitle: 'Technologies',
+    roles: 'Roles',
+    rolesValue: 'Administrator · Supervisor',
+    languages: 'Languages',
+    languagesValue: 'Français · English · العربية',
+    historyTitle: 'Development history',
+    historyIntro:
+      "Chronology built from the repository's Git history. Dates and commit references are those of the repository.",
+    initialCommit: 'First documented commit',
+    milestones: 'Major milestones',
+    kind_foundation: 'Foundation',
+    kind_feature: 'Feature',
+    kind_fix: 'Fix',
+    kind_security: 'Security',
+    kind_architecture: 'Architecture',
+    ipTitle: 'Author & intellectual property',
+    conception: 'Initiation & conception',
+    conceptionBody:
+      "The GERMA project was initiated and conceived by HANI YEBESET to meet the company's field-management needs.",
+    designContrib: 'Functional design contributions',
+    designBody:
+      "Definition of business workflows (customers, refrigerators, visits, issues, warnings), roles and business rules.",
+    devContrib: 'Development contributions',
+    devBody:
+      "Driving the implementation, technical decisions, and review/validation of the code produced with AI tools.",
+    identification: 'Project identification',
+    dossier: 'Technical prior-art evidence dossier',
+    dossierBody:
+      "An external technical prior-art dossier can be assembled (Git repository, commit timestamps, versioned migrations, build artefacts). This page does not expose its contents.",
+    legalNote:
+      "This section distinguishes documented facts from claims that require legal verification. No exclusive ownership or unverified legal declaration is asserted here.",
+    privacyTitle: 'Security & privacy',
+    privacyBody:
+      "This page does not display any API key, secret, token, password or infrastructure identifier.",
   },
 }
 
